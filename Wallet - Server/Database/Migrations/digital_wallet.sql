@@ -1,22 +1,18 @@
 CREATE DATABASE IF NOT EXISTS digital_wallet;
 USE digital_wallet;
 
--- Table: timestamps
--- Description: Stores creation and update timestamps for all entities to reduce redundancy.
 CREATE TABLE timestamps (
     timestamp_id INT AUTO_INCREMENT PRIMARY KEY,
-    entity_type ENUM('USER', 'ADMIN', 'WALLET', 'TRANSACTION', 'BANK_ACCOUNT', 'PAYMENT_CARD', 
+    entity_type ENUM('USER', 'ADMIN', 'WALLET', 'TRANSACTION', 'CARD', 'BANK_ACCOUNT', 
                      'VERIFICATION_DOCUMENT', 'RECURRING_PAYMENT', 'QR_CODE', 'NOTIFICATION', 
                      'API_KEY', 'SUPPORT_TICKET', 'TICKET_RESPONSE', 'SYSTEM_LOG', 'API_REQUEST_LOG', 
-                     'ANALYTICS_EVENT', 'EXCHANGE_RATE', 'ACCOUNT_LIMIT') NOT NULL,
+                     'ANALYTICS_EVENT', 'EXCHANGE_RATE', 'ACCOUNT_LIMIT', 'LOGIN_ATTEMPT') NOT NULL,
     entity_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_entity (entity_type, entity_id)
 );
 
--- Table: currencies
--- Description: Stores supported currencies with ISO 4217 codes (e.g., USD, EUR) for multi-currency transactions.
 CREATE TABLE currencies (
     currency_code CHAR(3) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
@@ -24,14 +20,11 @@ CREATE TABLE currencies (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- Table: users
--- Description: Stores core user account details, including support for Google Authentication.
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     phone_number VARCHAR(20) UNIQUE,
     password_hash VARCHAR(255),
-    google_id VARCHAR(255) UNIQUE,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     date_of_birth DATE NOT NULL,
@@ -40,26 +33,9 @@ CREATE TABLE users (
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL,
     INDEX idx_email (email),
-    INDEX idx_phone_number (phone_number),
-    INDEX idx_google_id (google_id)
+    INDEX idx_phone_number (phone_number)
 );
 
--- Table: user_profiles
--- Description: Stores optional user profile details like address and image.
-CREATE TABLE user_profiles (
-    user_id INT PRIMARY KEY,
-    address_line1 VARCHAR(255),
-    address_line2 VARCHAR(255),
-    city VARCHAR(100),
-    state VARCHAR(100),
-    postal_code VARCHAR(20),
-    country VARCHAR(100),
-    profile_image VARCHAR(255),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
--- Table: admins
--- Description: Stores admin accounts for managing the platform.
 CREATE TABLE admins (
     admin_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -73,8 +49,6 @@ CREATE TABLE admins (
     INDEX idx_username (username)
 );
 
--- Table: wallets
--- Description: Represents user wallets, each tied to a specific currency.
 CREATE TABLE wallets (
     wallet_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -86,8 +60,23 @@ CREATE TABLE wallets (
     INDEX idx_user_id (user_id)
 );
 
--- Table: exchange_rates
--- Description: Stores real-time exchange rates for currency conversion, updated via external API.
+CREATE TABLE cards (
+    card_id INT AUTO_INCREMENT PRIMARY KEY,
+    wallet_id INT NOT NULL UNIQUE,
+    card_nickname VARCHAR(100),
+    cardholder_name VARCHAR(255) NOT NULL,
+    card_number_last_four CHAR(4) NOT NULL,
+    card_type ENUM('VISA', 'MASTERCARD', 'AMEX', 'DISCOVER', 'OTHER') NOT NULL,
+    expiry_month TINYINT NOT NULL CHECK (expiry_month BETWEEN 1 AND 12),
+    expiry_year SMALLINT NOT NULL,
+    currency_code CHAR(3) NOT NULL,
+    is_primary BOOLEAN DEFAULT FALSE,
+    status ENUM('ACTIVE', 'INACTIVE', 'EXPIRED', 'BLOCKED') DEFAULT 'ACTIVE',
+    FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
+    FOREIGN KEY (currency_code) REFERENCES currencies(currency_code) ON DELETE RESTRICT,
+    INDEX idx_wallet_id (wallet_id)
+);
+
 CREATE TABLE exchange_rates (
     rate_id INT AUTO_INCREMENT PRIMARY KEY,
     base_currency_code CHAR(3) NOT NULL,
@@ -99,8 +88,6 @@ CREATE TABLE exchange_rates (
     UNIQUE KEY unique_rate_pair (base_currency_code, target_currency_code)
 );
 
--- Table: account_limits
--- Description: Defines global transaction limits in USD, applied across all currencies after conversion.
 CREATE TABLE account_limits (
     limit_id INT AUTO_INCREMENT PRIMARY KEY,
     verification_level ENUM('UNVERIFIED', 'BASIC', 'FULL') NOT NULL,
@@ -112,8 +99,6 @@ CREATE TABLE account_limits (
     UNIQUE KEY unique_limit_level_type (verification_level, transaction_type)
 );
 
--- Table: transactions
--- Description: Records all wallet transactions, optimized for admin history views with global limit enforcement.
 CREATE TABLE transactions (
     transaction_id VARCHAR(36) PRIMARY KEY,
     wallet_id INT NOT NULL,
@@ -138,8 +123,6 @@ CREATE TABLE transactions (
     INDEX idx_wallet_id (wallet_id)
 );
 
--- Table: bank_accounts
--- Description: Stores user's linked bank accounts for deposits and withdrawals.
 CREATE TABLE bank_accounts (
     bank_account_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -158,40 +141,6 @@ CREATE TABLE bank_accounts (
     INDEX idx_user_id (user_id)
 );
 
--- Table: payment_cards
--- Description: Stores user's linked payment cards for deposits and payments.
-CREATE TABLE payment_cards (
-    card_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    card_nickname VARCHAR(100),
-    cardholder_name VARCHAR(255) NOT NULL,
-    card_number_last_four CHAR(4) NOT NULL,
-    card_type ENUM('VISA', 'MASTERCARD', 'AMEX', 'DISCOVER', 'OTHER') NOT NULL,
-    expiry_month TINYINT NOT NULL CHECK (expiry_month BETWEEN 1 AND 12),
-    expiry_year SMALLINT NOT NULL,
-    currency_code CHAR(3) NOT NULL,
-    is_primary BOOLEAN DEFAULT FALSE,
-    status ENUM('ACTIVE', 'INACTIVE', 'EXPIRED', 'BLOCKED') DEFAULT 'ACTIVE',
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (currency_code) REFERENCES currencies(currency_code) ON DELETE RESTRICT,
-    INDEX idx_user_id (user_id)
-);
-
--- Table: card_billing_addresses
--- Description: Stores optional billing address details for payment cards.
-CREATE TABLE card_billing_addresses (
-    card_id INT PRIMARY KEY,
-    billing_address_line1 VARCHAR(255),
-    billing_address_line2 VARCHAR(255),
-    billing_city VARCHAR(100),
-    billing_state VARCHAR(100),
-    billing_postal_code VARCHAR(20),
-    billing_country VARCHAR(100),
-    FOREIGN KEY (card_id) REFERENCES payment_cards(card_id) ON DELETE CASCADE
-);
-
--- Table: verification_documents
--- Description: Stores passport or ID documents for user identity verification; verification_level remains UNVERIFIED until approved.
 CREATE TABLE verification_documents (
     document_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -207,12 +156,10 @@ CREATE TABLE verification_documents (
     INDEX idx_user_id (user_id)
 );
 
--- Table: recurring_payments
--- Description: Manages scheduled or recurring payments set by users.
 CREATE TABLE recurring_payments (
     recurring_payment_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    recipient_wallet_id INT NULL,
+    wallet_id INT NOT NULL,
     recipient_type ENUM('USER', 'MERCHANT', 'EXTERNAL') NOT NULL,
     amount DECIMAL(19, 4) NOT NULL,
     currency_code CHAR(3) NOT NULL,
@@ -224,13 +171,11 @@ CREATE TABLE recurring_payments (
     description VARCHAR(255),
     status ENUM('ACTIVE', 'PAUSED', 'CANCELLED', 'COMPLETED') DEFAULT 'ACTIVE',
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (recipient_wallet_id) REFERENCES wallets(wallet_id) ON DELETE SET NULL,
+    FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
     FOREIGN KEY (currency_code) REFERENCES currencies(currency_code) ON DELETE RESTRICT,
     INDEX idx_next_payment_date (next_payment_date)
 );
 
--- Table: qr_codes
--- Description: Stores QR codes for seamless payments or transfers.
 CREATE TABLE qr_codes (
     qr_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -248,8 +193,6 @@ CREATE TABLE qr_codes (
     INDEX idx_wallet_id (wallet_id)
 );
 
--- Table: password_reset_tokens
--- Description: Stores tokens for password reset requests.
 CREATE TABLE password_reset_tokens (
     token_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -260,8 +203,6 @@ CREATE TABLE password_reset_tokens (
     INDEX idx_token (token)
 );
 
--- Table: notifications
--- Description: Stores user notifications for transactions, security, etc.
 CREATE TABLE notifications (
     notification_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -274,8 +215,6 @@ CREATE TABLE notifications (
     INDEX idx_user_id (user_id)
 );
 
--- Table: api_keys
--- Description: Stores API keys for third-party integrations.
 CREATE TABLE api_keys (
     api_key_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -290,8 +229,16 @@ CREATE TABLE api_keys (
     INDEX idx_api_key (api_key)
 );
 
--- Table: support_tickets
--- Description: Manages user support tickets for inquiries and issues.
+CREATE TABLE login_attempts (
+    attempt_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    success BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_attempt_time (attempt_time)
+);
+
 CREATE TABLE support_tickets (
     ticket_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -308,8 +255,6 @@ CREATE TABLE support_tickets (
     INDEX idx_status (status)
 );
 
--- Table: ticket_responses
--- Description: Stores responses to support tickets from users or admins.
 CREATE TABLE ticket_responses (
     response_id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_id INT NOT NULL,
@@ -321,8 +266,6 @@ CREATE TABLE ticket_responses (
     INDEX idx_ticket_id (ticket_id)
 );
 
--- Table: system_logs
--- Description: Logs system events, errors, and admin actions for auditing.
 CREATE TABLE system_logs (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     log_level ENUM('INFO', 'WARNING', 'ERROR', 'CRITICAL') NOT NULL,
@@ -339,8 +282,6 @@ CREATE TABLE system_logs (
     INDEX idx_admin_id (admin_id)
 );
 
--- Table: api_request_logs
--- Description: Logs API requests for debugging and monitoring.
 CREATE TABLE api_request_logs (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     api_key_id INT NULL,
@@ -355,8 +296,6 @@ CREATE TABLE api_request_logs (
     FOREIGN KEY (api_key_id) REFERENCES api_keys(api_key_id) ON DELETE SET NULL
 );
 
--- Table: analytics_events
--- Description: Stores events for analytics and reporting (e.g., transaction volume).
 CREATE TABLE analytics_events (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
     event_type ENUM('USER_SIGNUP', 'TRANSACTION', 'DEPOSIT', 'WITHDRAWAL', 'TRANSFER', 'API_REQUEST', 'SUPPORT_TICKET') NOT NULL,
@@ -365,61 +304,3 @@ CREATE TABLE analytics_events (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
     INDEX idx_event_type (event_type)
 );
-
--- Default Data
--- Default Currencies: Initial set of supported currencies.
-INSERT INTO currencies (currency_code, name, symbol, is_active) VALUES
-('USD', 'United States Dollar', '$', TRUE),
-('EUR', 'Euro', '€', TRUE),
-('GBP', 'British Pound Sterling', '£', TRUE),
-('JPY', 'Japanese Yen', '¥', TRUE),
-('CAD', 'Canadian Dollar', '$', TRUE),
-('AUD', 'Australian Dollar', '$', TRUE);
-
--- Default Exchange Rates: Example exchange rates (USD base), to be updated real-time via API.
-INSERT INTO exchange_rates (rate_id, base_currency_code, target_currency_code, exchange_rate, source) VALUES
-(1, 'USD', 'EUR', 0.850000, 'MANUAL'),
-(2, 'USD', 'GBP', 0.730000, 'MANUAL'),
-(3, 'USD', 'JPY', 145.000000, 'MANUAL'),
-(4, 'USD', 'CAD', 1.350000, 'MANUAL'),
-(5, 'USD', 'AUD', 1.500000, 'MANUAL');
-
--- Default Timestamps for Exchange Rates
-INSERT INTO timestamps (entity_type, entity_id, created_at, updated_at) VALUES
-('EXCHANGE_RATE', 1, NOW(), NOW()),
-('EXCHANGE_RATE', 2, NOW(), NOW()),
-('EXCHANGE_RATE', 3, NOW(), NOW()),
-('EXCHANGE_RATE', 4, NOW(), NOW()),
-('EXCHANGE_RATE', 5, NOW(), NOW());
-
--- Default Account Limits: Global transaction limits in USD, applied across all currencies after conversion.
-INSERT INTO account_limits (limit_id, verification_level, transaction_type, daily_limit, weekly_limit, monthly_limit, single_transaction_limit) VALUES
-(1, 'UNVERIFIED', 'DEPOSIT', 500.00, 1000.00, 2000.00, 200.00),
-(2, 'UNVERIFIED', 'WITHDRAWAL', 300.00, 600.00, 1500.00, 200.00),
-(3, 'UNVERIFIED', 'TRANSFER', 300.00, 600.00, 1500.00, 200.00),
-(4, 'BASIC', 'DEPOSIT', 2000.00, 5000.00, 10000.00, 1000.00),
-(5, 'BASIC', 'WITHDRAWAL', 1000.00, 3000.00, 7000.00, 1000.00),
-(6, 'BASIC', 'TRANSFER', 1000.00, 3000.00, 7000.00, 1000.00),
-(7, 'FULL', 'DEPOSIT', 10000.00, 20000.00, 50000.00, 5000.00),
-(8, 'FULL', 'WITHDRAWAL', 5000.00, 10000.00, 25000.00, 5000.00),
-(9, 'FULL', 'TRANSFER', 5000.00, 10000.00, 25000.00, 5000.00);
-
--- Default Timestamps for Account Limits
-INSERT INTO timestamps (entity_type, entity_id, created_at, updated_at) VALUES
-('ACCOUNT_LIMIT', 1, NOW(), NOW()),
-('ACCOUNT_LIMIT', 2, NOW(), NOW()),
-('ACCOUNT_LIMIT', 3, NOW(), NOW()),
-('ACCOUNT_LIMIT', 4, NOW(), NOW()),
-('ACCOUNT_LIMIT', 5, NOW(), NOW()),
-('ACCOUNT_LIMIT', 6, NOW(), NOW()),
-('ACCOUNT_LIMIT', 7, NOW(), NOW()),
-('ACCOUNT_LIMIT', 8, NOW(), NOW()),
-('ACCOUNT_LIMIT', 9, NOW(), NOW());
-
--- Default Super Admin: Initial super admin account for system management (password: Admin@123).
-INSERT INTO admins (admin_id, username, email, password_hash, first_name, last_name, role) 
-VALUES (1, 'admin', 'admin@digitalwallet.com', '$2y$10$92Ii80t1QWNqKkPQUVG10OFmNzVUOD99lfA2KIPYzsEAIKbXQX.6i', 'System', 'Administrator', 'SUPER_ADMIN');
-
--- Default Timestamp for Super Admin
-INSERT INTO timestamps (entity_type, entity_id, created_at, updated_at) VALUES
-('ADMIN', 1, NOW(), NOW());

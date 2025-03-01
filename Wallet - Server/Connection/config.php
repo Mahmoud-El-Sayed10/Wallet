@@ -9,6 +9,7 @@ define('DB_CHARSET', 'utf8mb4');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('LOG_PATH', __DIR__ . '/../logs/error.log');
 
+
 // Prevent direct access
 if (basename($_SERVER['PHP_SELF']) === 'config.php') {
     http_response_code(403);

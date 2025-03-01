@@ -24,7 +24,7 @@ if (!$conn->set_charset(DB_CHARSET)) {
 }
 
 // Set UTC timezone
-$conn->query("SET time_zone = '+00:00'");
+$conn->query("SET time_zone = '+02:00'");
 
 // Prevent direct access
 if (basename($_SERVER['PHP_SELF']) === 'db_connect.php') {
