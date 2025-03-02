@@ -1,5 +1,4 @@
 <?php
-
 // API to delete an admin profile
 
 require_once '../../Connection/db_connect.php';
