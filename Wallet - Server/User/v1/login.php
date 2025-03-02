@@ -2,8 +2,8 @@
 
 // API to log in a user with email and password
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/User.php';
+require_once '../../Connection/db_connect.php';
+require_once '../../Models/User.php';
 
 header('Content-Type: application/json');
 
