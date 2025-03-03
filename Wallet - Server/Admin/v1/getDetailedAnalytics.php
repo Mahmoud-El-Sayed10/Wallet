@@ -2,12 +2,12 @@
 
 // API to retrieve detailed analytics data for admins using models
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/User.php';
-require_once '../../model/Wallet.php';
-require_once '../../model/Transaction.php';
-require_once '../../model/BankAccount.php';
-require_once '../../model/VerificationDocument.php';
+require_once '../../Connection/db_connect.php';
+require_once '../../Models/User.php';
+require_once '../../Models/Wallet.php';
+require_once '../../Models/Transaction.php';
+require_once '../../Models/BankAccount.php';
+require_once '../../Models/VerificationDocument.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');

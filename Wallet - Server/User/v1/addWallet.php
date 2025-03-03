@@ -1,8 +1,8 @@
 <?php
 // API to add a new wallet for a user
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/Wallet.php';
+require_once '../../Connection/db_connect.php';
+require_once '../../Models/Wallet.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');

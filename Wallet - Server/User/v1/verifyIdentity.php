@@ -1,8 +1,8 @@
 <?php
 // API to upload verification documents for identity verification
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/VerificationDocument.php';
+require_once '../../Connection/db_connect.php';
+require_once '../../Models/VerificationDocument.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');

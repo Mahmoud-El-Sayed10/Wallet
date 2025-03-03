@@ -1,9 +1,9 @@
 <?php
 // API to retrieve transactions for a specific user
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/User.php';
-require_once '../../model/Transaction.php';
+require_once '../../Connection/db_connect.php';
+require_once '../../Models/User.php';
+require_once '../../Models/Transaction.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
