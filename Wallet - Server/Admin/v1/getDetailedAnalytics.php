@@ -10,6 +10,7 @@ require_once '../../model/BankAccount.php';
 require_once '../../model/VerificationDocument.php';
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
 session_start();
 $response = ['success' => false, 'message' => 'Unauthorized'];

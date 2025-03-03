@@ -6,6 +6,7 @@ require_once '../../connection/db_connect.php';
 require_once '../../model/User.php';
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
 session_start();
 $response = ['success' => false, 'message' => 'Unauthorized'];

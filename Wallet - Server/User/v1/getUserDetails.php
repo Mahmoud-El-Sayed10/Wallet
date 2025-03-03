@@ -6,6 +6,7 @@ require_once '../../Connection/db_connect.php';
 require_once '../../Models/User.php';
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
 $response = ['success' => false, 'message' => 'Missing user ID'];
 if (!isset($_GET['id'])) {
