@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Digital Wallet Dashboard">
+    <title>Digital Wallet - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <img src="assets/wallet_5365683.png" alt="Digital Wallet Logo" class="logo">
+        <ul class="nav-links" id="navLinks">
+            <!-- Dynamically updated by script.js -->
+        </ul>
+    </nav>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard-section">
+        <div class="dashboard-card">
+            <h1 class="dashboard-title">Welcome to Your Dashboard</h1>
+            <p id="userInfo">Logged in as: <span id="userEmail"></span> (User ID: <span id="userId"></span>)</p>
+            <div class="dashboard-content">
+                <h2>Wallet Summary</h2>
+                <div id="walletSummary"></div>
+                <h2>Recent Transactions</h2>
+                <div id="recentTransactions"></div>
+                <button class="btn primary-btn" onclick="window.location.href='wallet-details.html'">View Wallets</button>
+                <button class="btn secondary-btn" onclick="window.location.href='profile.html'">View Profile</button>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
