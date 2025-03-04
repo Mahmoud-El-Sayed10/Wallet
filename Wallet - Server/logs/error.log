@@ -1,0 +1,29 @@
+Starting deleteCard.php for card_id: 1Card data retrieved: Array
+(
+    [card_id] => 1
+    [wallet_id] => 1
+    [card_nickname] => Main Card
+    [cardholder_name] => John Doe
+    [card_number_last_four] => 1234
+    [card_type] => VISA
+    [expiry_month] => 12
+    [expiry_year] => 2025
+    [currency_code] => USD
+    [is_primary] => 1
+    [status] => ACTIVE
+)
+Starting deleteCard.php for card_id: 1Card data retrieved: Array
+(
+    [card_id] => 1
+    [wallet_id] => 1
+    [card_nickname] => Main Card
+    [cardholder_name] => John Doe
+    [card_number_last_four] => 1234
+    [card_type] => VISA
+    [expiry_month] => 12
+    [expiry_year] => 2025
+    [currency_code] => USD
+    [is_primary] => 1
+    [status] => ACTIVE
+)
+Ownership check result: trueDelete successful for card_id: 1Exception caught: Duplicate entry 'CARD-1' for key 'unique_entity'Starting deleteCard.php for card_id: 2Card data retrieved: Starting deleteCard.php for card_id: 1Card data retrieved: 

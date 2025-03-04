@@ -42,7 +42,6 @@ class BankAccount {
             $types .= 'i';
             $values[] = $data['is_verified'];
         }
-        // Add more fields as needed
 
         if (empty($set)) return false;
 
