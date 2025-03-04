@@ -1,5 +1,4 @@
 <?php
-
 require_once 'config.php';
 
 // Initialize MySQLi connection
@@ -33,4 +32,7 @@ if (basename($_SERVER['PHP_SELF']) === 'db_connect.php') {
     echo json_encode(['error' => 'Direct access forbidden']);
     exit;
 }
+
+// Return the connection
+return $conn;
 ?>

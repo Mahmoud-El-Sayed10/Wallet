@@ -295,6 +295,115 @@ body {
     color: var(--teal);
 }
 
+
+/* Appended login to existing styles */
+.login-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    background-color: var(--light-gray);
+    padding: 2rem 0;
+}
+
+.login-card {
+    background-color: var(--mid-gray);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 25rem;
+    color: var(--light-gray);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: space-between;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-title {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.form-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.input-field {
+    width: 85%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    background-color: #fff;
+    color: var(--dark-gray);
+}
+
+.input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 11%;
+    transform: translateY(50%);
+    color: var(--teal);
+}
+
+.show-password {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--light-gray);
+}
+
+.show-password input {
+    margin-right: 0.5rem;
+}
+
+.forgot-password {
+    font-size: 0.9rem;
+    margin-top: 0.625rem;
+}
+
+.forgot-password a {
+    color: var(--teal);
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+
+.signup-prompt {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.signup-prompt a {
+    color: var(--teal);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.signup-prompt a:hover {
+    text-decoration: underline;
+}
+
+#loginResult.result {
+    margin-top: 1rem;
+}
+
+
 @media (max-width: 48rem) {
     .navbar {
         flex-direction: column;
@@ -324,5 +433,14 @@ body {
     .feature-grid {
         grid-template-columns: 1fr;
     }
-}
 
+    .login-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        background-color: var(--light-gray);
+        padding: 1rem 0;
+        max-width: 100%;
+    }
+}
