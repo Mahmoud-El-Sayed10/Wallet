@@ -2,8 +2,6 @@
 $db = require_once '../../Connection/db_connect.php';
 require_once '../../Models/Transaction.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);

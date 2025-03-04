@@ -1,0 +1,87 @@
+<?php
+$db = require_once '../../Connection/db_connect.php';
+require_once '../../Models/BankAccount.php';
+
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
+
+session_start();
+$response = ['success' => false, 'message' => 'Unauthorized'];
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode($response);
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (!isset($data['bank_account_id'])) {
+    $response['message'] = 'Bank account ID is required';
+    echo json_encode($response);
+    exit;
+}
+
+$bank_account_id = $data['bank_account_id'];
+
+try {
+    $bankAccount = new BankAccount($db);
+    
+    // Get the bank account to verify ownership
+    $accountData = $bankAccount->read($bank_account_id);
+    
+    if (!$accountData) {
+        $response['message'] = 'Bank account not found';
+        echo json_encode($response);
+        exit;
+    }
+    
+    // Check if the bank account belongs to the current user
+    if ($accountData['user_id'] != $user_id) {
+        $response['message'] = 'Unauthorized to update this bank account';
+        http_response_code(403);
+        echo json_encode($response);
+        exit;
+    }
+    
+    // Prepare update data
+    $updateData = [];
+    if (isset($data['account_nickname'])) $updateData['account_nickname'] = $data['account_nickname'];
+    if (isset($data['account_holder_name'])) $updateData['account_holder_name'] = $data['account_holder_name'];
+    if (isset($data['bank_name'])) $updateData['bank_name'] = $data['bank_name'];
+    if (isset($data['account_type'])) $updateData['account_type'] = $data['account_type'];
+    if (isset($data['is_primary'])) $updateData['is_primary'] = $data['is_primary'];
+    
+    if (empty($updateData)) {
+        $response['message'] = 'No fields to update';
+        echo json_encode($response);
+        exit;
+    }
+    
+    if ($bankAccount->update($bank_account_id, $updateData)) {
+        // Update timestamp
+        $stmt = $db->prepare("INSERT INTO timestamps (entity_type, entity_id) VALUES ('BANK_ACCOUNT', ?) ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP");
+        $stmt->bind_param("i", $bank_account_id);
+        $stmt->execute();
+        
+        $response['success'] = true;
+        $response['message'] = 'Bank account updated successfully';
+    } else {
+        $response['message'] = 'Failed to update bank account';
+    }
+    
+    echo json_encode($response);
+    
+} catch (Exception $e) {
+    $response['message'] = $e->getMessage();
+    http_response_code(400);
+    echo json_encode($response);
+}
+
+$db->close();
+?>

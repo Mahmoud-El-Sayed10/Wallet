@@ -26,4 +26,18 @@ Starting deleteCard.php for card_id: 1Card data retrieved: Array
     [is_primary] => 1
     [status] => ACTIVE
 )
-Ownership check result: trueDelete successful for card_id: 1Exception caught: Duplicate entry 'CARD-1' for key 'unique_entity'Starting deleteCard.php for card_id: 2Card data retrieved: Starting deleteCard.php for card_id: 1Card data retrieved: 
+Ownership check result: trueDelete successful for card_id: 1Exception caught: Duplicate entry 'CARD-1' for key 'unique_entity'Starting deleteCard.php for card_id: 2Card data retrieved: Starting deleteCard.php for card_id: 1Card data retrieved: Starting deleteCard.php for card_id: 2Card data retrieved: Array
+(
+    [card_id] => 2
+    [wallet_id] => 1
+    [card_nickname] => Main Card
+    [cardholder_name] => John Doe
+    [card_number_last_four] => 1234
+    [card_type] => VISA
+    [expiry_month] => 12
+    [expiry_year] => 2025
+    [currency_code] => USD
+    [is_primary] => 1
+    [status] => ACTIVE
+)
+Ownership check result: trueDelete successful for card_id: 2Exception caught: Duplicate entry 'CARD-2' for key 'unique_entity'DELETE Bank Account Input: {"bank_account_id":2}Account data: {"bank_account_id":2,"user_id":1,"account_nickname":"Main Account","account_holder_name":"John Doe","bank_name":"Example Bank","account_number":"1234567890","routing_number":"0987654321","account_type":"CHECKING","currency_code":"USD","is_primary":0,"is_verified":0,"status":"PENDING"}DELETE Bank Account Input: {"bank_account_id":2}Account data: nullDELETE Bank Account Input: {"bank_account_id":3}Account data: {"bank_account_id":3,"user_id":1,"account_nickname":null,"account_holder_name":"Mahmoud El Sayed","bank_name":"BLOM","account_number":"1125509484","routing_number":"30240","account_type":"SAVINGS","currency_code":"USD","is_primary":0,"is_verified":0,"status":"PENDING"}DELETE Bank Account Input: {"bank_account_id":5}Account data: {"bank_account_id":5,"user_id":1,"account_nickname":"My Checking Account","account_holder_name":"TestTest","bank_name":"TestofLeb","account_number":"1234567897","routing_number":"123456789","account_type":"SAVINGS","currency_code":"GBP","is_primary":0,"is_verified":0,"status":"PENDING"}

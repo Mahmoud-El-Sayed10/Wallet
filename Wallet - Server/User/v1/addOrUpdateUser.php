@@ -2,11 +2,9 @@
 
 // API to add or update a user with dynamic profile updates
 
-require_once '../../Connection/db_connect.php';
+$db = require_once '../../Connection/db_connect.php';
 require_once '../../Models/User.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
 $response = ['success' => false, 'message' => 'Missing id'];
 
@@ -27,7 +25,7 @@ if ($is_new && (!isset($_POST['email']) || !isset($_POST['password']) || !isset(
 }
 
 try {
-    $user = new User($conn);
+    $user = new User($db);
 
     $email = $_POST['email'] ?? null;
     $password = $_POST['password'] ?? null;
@@ -89,4 +87,7 @@ try {
     error_log("Add/Update user failed: " . $e->getMessage(), 3, LOG_PATH);
     echo json_encode($response);
 }
+
+$db->close();
+
 ?>

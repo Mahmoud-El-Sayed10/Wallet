@@ -1,10 +1,7 @@
 <?php
 // API to log in a user with email and password
-$db = require_once '../../Connection/db_connect.php'; // Capture the returned connection
+$db = require_once '../../Connection/db_connect.php'; 
 require_once '../../Models/User.php';
-
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

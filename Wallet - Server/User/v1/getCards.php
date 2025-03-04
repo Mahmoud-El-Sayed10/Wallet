@@ -1,6 +1,7 @@
 <?php
 $db = require_once '../../Connection/db_connect.php';
-require_once '../../Models/Wallet.php';
+require_once '../../Models/Card.php';
+
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
@@ -19,17 +20,25 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 try {
-    $wallet = new Wallet($db);
-    $wallets = $wallet->read($user_id);
-    if (empty($wallets)) {
-        $response['message'] = 'No wallets found';
+    $cards = [];
+    $stmt = $db->prepare("SELECT c.* FROM cards c JOIN wallets w ON c.wallet_id = w.wallet_id WHERE w.user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $cards[] = $row;
+    }
+    $stmt->close();
+
+    if (empty($cards)) {
+        $response['message'] = 'No cards found';
         echo json_encode($response);
         exit;
     }
 
     $response['success'] = true;
-    $response['message'] = 'Wallets retrieved successfully';
-    $response['data'] = $wallets;
+    $response['message'] = 'Cards retrieved successfully';
+    $response['data'] = $cards;
     echo json_encode($response);
 } catch (Exception $e) {
     $response['message'] = $e->getMessage();

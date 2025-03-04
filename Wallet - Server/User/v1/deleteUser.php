@@ -2,11 +2,8 @@
 // Wallet - Server/user/v1/deleteUser.php
 // API to delete a user by ID
 
-require_once '../../Connection/db_connect.php';
+$db = require_once '../../Connection/db_connect.php';
 require_once '../../Models/User.php';
-
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
 // Step 1: Check for user_id
 $response = ['success' => false, 'message' => 'Missing user ID'];
@@ -20,7 +17,7 @@ $user_id = $_GET['id'];
 try {
     // Step 2: Verify user exists
     $user = new User($db);
-    $userData = $user->read($user_id); // Assuming read accepts user_id instead of email for this case
+    $userData = $user->read($user_id); 
     if (!$userData) {
         $response['message'] = 'User not found';
         echo json_encode($response);

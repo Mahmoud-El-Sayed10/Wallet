@@ -304,3 +304,15 @@ CREATE TABLE analytics_events (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
     INDEX idx_event_type (event_type)
 );
+
+CREATE TABLE external_transfers (
+    transfer_id INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_id VARCHAR(36) NOT NULL,
+    recipient_name VARCHAR(255) NOT NULL,
+    account_number VARCHAR(255) NOT NULL,
+    bank_name VARCHAR(255) NOT NULL,
+    routing_number VARCHAR(255) NULL,
+    description VARCHAR(255) NULL,
+    FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id) ON DELETE CASCADE,
+    INDEX idx_transaction_id (transaction_id)
+);

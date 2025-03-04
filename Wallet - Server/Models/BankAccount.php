@@ -28,34 +28,43 @@ class BankAccount {
 
     public function update($bank_account_id, $data) {
         $set = [];
-        $params = [];
         $types = '';
         $values = [];
-
-        if (isset($data['account_nickname'])) {
-            $set[] = "account_nickname = ?";
-            $types .= 's';
-            $values[] = $data['account_nickname'];
+    
+        // Build the SET part of the query based on provided data
+        foreach ($data as $key => $value) {
+            $set[] = "$key = ?";
+            
+            // Determine data type for bind_param
+            if (is_int($value) || is_bool($value)) {
+                $types .= 'i';
+            } else {
+                $types .= 's';
+            }
+            
+            $values[] = $value;
         }
-        if (isset($data['is_verified'])) {
-            $set[] = "is_verified = ?";
-            $types .= 'i';
-            $values[] = $data['is_verified'];
-        }
-
+    
         if (empty($set)) return false;
-
-        $query = "UPDATE bank_accounts SET " . implode(', ', $set) . " WHERE bank_account_id = ?";
+    
+        // Add bank_account_id to values and types
         $types .= 'i';
         $values[] = $bank_account_id;
-
+    
+        $query = "UPDATE bank_accounts SET " . implode(', ', $set) . " WHERE bank_account_id = ?";
+        
         $stmt = $this->db->prepare($query);
+        if ($stmt === false) {
+            return false;
+        }
+        
         $stmt->bind_param($types, ...$values);
         $success = $stmt->execute();
         $stmt->close();
+        
         return $success;
     }
-
+    
     public function delete($bank_account_id) {
         $stmt = $this->db->prepare("DELETE FROM bank_accounts WHERE bank_account_id = ?");
         $stmt->bind_param("i", $bank_account_id);
