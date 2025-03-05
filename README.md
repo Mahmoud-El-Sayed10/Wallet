@@ -4,3 +4,6 @@ ER Diagram
 Hosting Details:
 DNS:http://ec2-13-38-23-228.eu-west-3.compute.amazonaws.com/
 IP Address: 13.38.23.228
+
+To access GitHub Pages:
+https://Mahmoud-El-Sayed10.github.io/Mahmoud-El-Sayed10.github.io
