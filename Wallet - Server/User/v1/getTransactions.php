@@ -28,6 +28,14 @@ try {
         exit;
     }
 
+    // Validate currency codes
+    foreach ($transactions as &$transaction) {
+        if (!isset($transaction['currency_code']) || empty(trim($transaction['currency_code']))) {
+            $transaction['currency_code'] = 'USD'; 
+        }
+    }
+    unset($transaction);
+
     $response['success'] = true;
     $response['message'] = 'Transactions retrieved successfully';
     $response['data'] = $transactions;
@@ -37,6 +45,5 @@ try {
     http_response_code(400);
     echo json_encode($response);
 }
-
 $db->close();
 ?>

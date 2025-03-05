@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Digital Wallet Sign Up">
+    <title>Digital Wallet - Sign Up</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    
+    <header class="header">
+        <a href="index.html" class="logo">
+            <i class="fas fa-wallet"></i>
+        </a>
+        <div class="nav-links">
+            <a href="index.html#features" class="nav-link">
+                <i class="fas fa-star"></i> Features
+            </a>
+            <a href="index.html#about" class="nav-link">
+                <i class="fas fa-info-circle"></i> About
+            </a>
+            <a href="index.html#contact" class="nav-link">
+                <i class="fas fa-envelope"></i> Contact
+            </a>
+            <a href="login.html" class="nav-link">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a href="register.html" class="signup-btn">
+                <i class="fas fa-user-plus"></i> Sign Up
+            </a>
+        </div>
+    </header>
+
+
+    <div class="register-container">
+        <h1 class="register-title">Create Your Account</h1>
+        
+        <div class="register-steps">
+            <div class="step active" id="step1">1</div>
+            <div class="step-line"></div>
+            <div class="step" id="step2">2</div>
+            <div class="step-line"></div>
+            <div class="step" id="step3">3</div>
+        </div>
+        
+        <form id="registerForm" class="register-form">
+        
+            <div class="form-step active" id="formStep1">
+                <h3>Basic Information</h3>
+                
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="firstName">First Name <span class="required">*</span></label>
+                        <input type="text" id="firstName" name="first_name" class="input-field" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="lastName">Last Name <span class="required">*</span></label>
+                        <input type="text" id="lastName" name="last_name" class="input-field" required>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" class="input-field" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="dateOfBirth">Date of Birth <span class="required">*</span></label>
+                    <input type="date" id="dateOfBirth" name="date_of_birth" class="input-field" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" name="phone_number" class="input-field" placeholder="Optional">
+                </div>
+                
+                <div class="form-nav">
+                    <button type="button" class="btn primary-btn" id="step1Next">Next <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+           
+            <div class="form-step" id="formStep2">
+                <h3>Security</h3>
+                
+                <div class="input-group">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <div class="password-field">
+                        <input type="password" id="password" name="password" class="input-field" required minlength="8">
+                        <button type="button" class="toggle-password" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="password-hint">Password must be at least 8 characters long</p>
+                </div>
+                
+                <div class="input-group">
+                    <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+                    <div class="password-field">
+                        <input type="password" id="confirmPassword" class="input-field" required>
+                        <button type="button" class="toggle-password" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="password-strength">
+                    <p>Password strength:</p>
+                    <div class="strength-meter">
+                        <div class="strength-meter-fill" id="strengthMeter"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText">Weak</span>
+                </div>
+                
+                <div class="form-nav">
+                    <button type="button" class="btn secondary-btn" id="step2Prev"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button type="button" class="btn primary-btn" id="step2Next">Next <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+       
+            <div class="form-step" id="formStep3">
+                <h3>Terms and Conditions</h3>
+                
+                <div class="terms-container">
+                    <div class="terms-text">
+                        <h4>User Agreement</h4>
+                        <p>Welcome to Digital Wallet. By using our service, you agree to the following terms and conditions:</p>
+                        <ul>
+                            <li>You must be at least 18 years old to use our service.</li>
+                            <li>You are responsible for maintaining the confidentiality of your account information.</li>
+                            <li>You agree to use the service in compliance with all applicable laws and regulations.</li>
+                            <li>Digital Wallet reserves the right to suspend or terminate accounts that violate our terms.</li>
+                            <li>All transactions processed through our platform are subject to verification.</li>
+                        </ul>
+                        
+                        <h4>Privacy Policy</h4>
+                        <p>Digital Wallet is committed to protecting your privacy. Our privacy policy explains how we collect, use, and protect your personal information.</p>
+                        <p>We collect information such as your name, email, date of birth, and transaction data to provide and improve our services.</p>
+                        <p>Your data is encrypted and stored securely. We do not share your personal information with third parties except as required to provide our services or comply with legal obligations.</p>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agreeTerms" required>
+                    <label for="agreeTerms">I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a> <span class="required">*</span></label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agreeMarketing">
+                    <label for="agreeMarketing">I agree to receive marketing communications from Digital Wallet</label>
+                </div>
+                
+                <div id="registerResult"></div>
+                
+                <div class="form-nav">
+                    <button type="button" class="btn secondary-btn" id="step3Prev"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button type="submit" class="btn primary-btn">Create Account</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="login-link">
+            Already have an account? <a href="login.html">Log In</a>
+        </div>
+    </div>
+
+   
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Digital Wallet. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

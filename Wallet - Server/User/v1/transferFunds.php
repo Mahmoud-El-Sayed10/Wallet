@@ -47,7 +47,8 @@ try {
     
     // Start transaction
     $db->begin_transaction();
-    
+    $inTransaction = true;
+
     // Get source wallet to validate ownership and check balance
     $sourceWallets = $wallet->read($user_id);
     $sourceWalletFound = false;
@@ -93,92 +94,16 @@ try {
     // Apply exchange rate if currencies are different
     $exchange_fee = 0;
     $exchange_rate = 1.0;
+    $sourceCurrency = $sourceWallet['currency_code'];
+    $targetCurrency = $targetWallet['currency_code'];
     
-    if ($sourceWallet['currency_code'] != $targetWallet['currency_code']) {
-        // Fetch exchange rate from database or external API
-        $stmt = $db->prepare(
-            "SELECT exchange_rate FROM exchange_rates 
-             WHERE base_currency_code = ? AND target_currency_code = ?"
-        );
-        $stmt->bind_param("ss", $sourceWallet['currency_code'], $targetWallet['currency_code']);
-        $stmt->execute();
-        $rateResult = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        
-        if (!$rateResult) {
-            // If rate not found, revert to default
-            $exchange_rate = 1.0;
-        } else {
-            $exchange_rate = $rateResult['exchange_rate'];
-        }
-        
+    if ($sourceCurrency != $targetCurrency) {
         // Apply fixed fee for currency conversion (e.g., 2%)
         $exchange_fee = $amount * 0.02;
     }
     
     // Calculate amount after exchange rate and fees
     $target_amount = ($amount - $exchange_fee) * $exchange_rate;
-    
-    // Create transfer sent transaction
-    $outgoing_transaction_id = $transaction->generateTransactionId();
-    $stmt = $db->prepare(
-        "INSERT INTO transactions 
-         (transaction_id, wallet_id, transaction_type, amount, currency_code, fee, status, 
-          recipient_wallet_id, recipient_type, exchange_rate_applied, amount_in_base_currency, 
-          base_currency_code, description) 
-         VALUES (?, ?, 'TRANSFER_SENT', ?, ?, ?, 'PENDING', ?, 'USER', ?, ?, ?, ?)"
-    );
-    $stmt->bind_param(
-        "sidddidsds", 
-        $outgoing_transaction_id, 
-        $source_wallet_id, 
-        $amount, 
-        $sourceWallet['currency_code'], 
-        $exchange_fee, 
-        $target_wallet_id, 
-        $exchange_rate, 
-        $amount,
-        $sourceWallet['currency_code'],
-        $description
-    );
-    
-    if (!$stmt->execute()) {
-        $db->rollback();
-        $response['message'] = 'Failed to create outgoing transaction';
-        echo json_encode($response);
-        exit;
-    }
-    $stmt->close();
-    
-    // Create transfer received transaction
-    $incoming_transaction_id = $transaction->generateTransactionId();
-    $stmt = $db->prepare(
-        "INSERT INTO transactions 
-         (transaction_id, wallet_id, transaction_type, amount, currency_code, fee, status, 
-          recipient_wallet_id, recipient_type, exchange_rate_applied, amount_in_base_currency, 
-          base_currency_code, description) 
-         VALUES (?, ?, 'TRANSFER_RECEIVED', ?, ?, 0, 'PENDING', ?, 'USER', ?, ?, ?, ?)"
-    );
-    $stmt->bind_param(
-        "siddidsds", 
-        $incoming_transaction_id, 
-        $target_wallet_id, 
-        $target_amount, 
-        $targetWallet['currency_code'],
-        $source_wallet_id, 
-        $exchange_rate, 
-        $target_amount,
-        $targetWallet['currency_code'],
-        $description
-    );
-    
-    if (!$stmt->execute()) {
-        $db->rollback();
-        $response['message'] = 'Failed to create incoming transaction';
-        echo json_encode($response);
-        exit;
-    }
-    $stmt->close();
     
     // Update source wallet balance
     $new_source_balance = $sourceWallet['balance'] - $amount;
@@ -206,25 +131,88 @@ try {
     }
     $stmt->close();
     
-    // Update transaction status to completed
-    $stmt = $db->prepare("UPDATE transactions SET status = 'COMPLETED' WHERE transaction_id = ? OR transaction_id = ?");
-    $stmt->bind_param("ss", $outgoing_transaction_id, $incoming_transaction_id);
-    $stmt->execute();
+    // Generate transaction IDs
+    $outgoing_transaction_id = $transaction->generateTransactionId();
+    $incoming_transaction_id = $transaction->generateTransactionId();
+    
+    // Insert transactions directly with minimal fields
+    $query = "INSERT INTO transactions (transaction_id, wallet_id, transaction_type, amount, currency_code, fee, status, recipient_wallet_id, description) VALUES (?, ?, 'TRANSFER_SENT', ?, ?, ?, 'COMPLETED', ?, ?)";
+    $stmt = $db->prepare($query);
+    
+    // For bind_param, we need to use references for all variables
+    $outTxnId = $outgoing_transaction_id;
+    $sourceWalletId = $source_wallet_id;
+    $amountValue = $amount;
+    $sourceCurrencyValue = $sourceCurrency;
+    $exchangeFeeValue = $exchange_fee;
+    $targetWalletId = $target_wallet_id;
+    $descriptionValue = $description;
+    
+    $stmt->bind_param("siddids", 
+        $outTxnId, 
+        $sourceWalletId, 
+        $amountValue, 
+        $sourceCurrencyValue, 
+        $exchangeFeeValue, 
+        $targetWalletId, 
+        $descriptionValue
+    );
+    
+    if (!$stmt->execute()) {
+        $error = $db->error;
+        $db->rollback();
+        $response['message'] = 'Failed to create outgoing transaction: ' . $error;
+        echo json_encode($response);
+        exit;
+    }
+    $stmt->close();
+    
+    // Insert incoming transaction
+    $query = "INSERT INTO transactions (transaction_id, wallet_id, transaction_type, amount, currency_code, fee, status, recipient_wallet_id, description) VALUES (?, ?, 'TRANSFER_RECEIVED', ?, ?, 0, 'COMPLETED', ?, ?)";
+    $stmt = $db->prepare($query);
+    
+    // For bind_param, we need to use references for all variables
+    $inTxnId = $incoming_transaction_id;
+    $targetWalletIdParam = $target_wallet_id;
+    $targetAmountValue = $target_amount;
+    $targetCurrencyValue = $targetCurrency;
+    $sourceWalletIdParam = $source_wallet_id;
+    $descriptionParam = $description;
+    
+    $stmt->bind_param("siddis", 
+        $inTxnId, 
+        $targetWalletIdParam, 
+        $targetAmountValue, 
+        $targetCurrencyValue, 
+        $sourceWalletIdParam, 
+        $descriptionParam
+    );
+    
+    if (!$stmt->execute()) {
+        $error = $db->error;
+        $db->rollback();
+        $response['message'] = 'Failed to create incoming transaction: ' . $error;
+        echo json_encode($response);
+        exit;
+    }
     $stmt->close();
     
     // Record timestamps
     $stmt = $db->prepare("INSERT INTO timestamps (entity_type, entity_id) VALUES ('TRANSACTION', ?)");
-    $stmt->bind_param("s", $outgoing_transaction_id);
+    $outTxnIdTs = $outgoing_transaction_id;
+    $stmt->bind_param("s", $outTxnIdTs);
     $stmt->execute();
     $stmt->close();
     
     $stmt = $db->prepare("INSERT INTO timestamps (entity_type, entity_id) VALUES ('TRANSACTION', ?)");
-    $stmt->bind_param("s", $incoming_transaction_id);
+    $inTxnIdTs = $incoming_transaction_id;
+    $stmt->bind_param("s", $inTxnIdTs);
     $stmt->execute();
     $stmt->close();
     
     // Commit transaction
     $db->commit();
+    $inTransaction = false;
     
     // Prepare response with detailed information
     $response['success'] = true;
@@ -232,9 +220,9 @@ try {
     $response['data'] = [
         'transaction_id' => $outgoing_transaction_id,
         'amount_sent' => $amount,
-        'currency_sent' => $sourceWallet['currency_code'],
+        'currency_sent' => $sourceCurrency,
         'amount_received' => $target_amount,
-        'currency_received' => $targetWallet['currency_code'],
+        'currency_received' => $targetCurrency,
         'exchange_rate' => $exchange_rate,
         'exchange_fee' => $exchange_fee,
         'new_source_balance' => $new_source_balance,
@@ -245,7 +233,7 @@ try {
     
 } catch (Exception $e) {
     // Rollback transaction in case of error
-    if ($db->in_transaction()) {
+    if (isset($inTransaction) && $inTransaction) {
         $db->rollback();
     }
     $response['message'] = $e->getMessage();

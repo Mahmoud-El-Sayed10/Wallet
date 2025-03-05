@@ -1,4 +1,4 @@
-// walletAPI.js - Centralized API service for Digital Wallet
+// walletAPI - Centralized API service for Digital Wallet
 
 const walletAPI = {
     // Base configuration
@@ -230,6 +230,10 @@ const walletAPI = {
         
         async getByType(type) {
             return walletAPI.get(`getTransactions.php?type=${type}`);
+        },
+        
+        async verifyTransaction(verificationCode) {
+            return walletAPI.post('verifyTransaction.php', { verification_code: verificationCode });
         }
     }
 };
@@ -274,6 +278,12 @@ document.addEventListener('DOMContentLoaded', () => {
             break;
         case 'profile.html':
             // Profile initialization is handled in profile.html
+            break;
+        case 'register.html':
+            initRegister();
+            break;
+        case 'profile.html':
+            initProfile();
             break;
         case 'index.html':
             // Landing page logic
@@ -422,6 +432,309 @@ function initLogin() {
     }
 }
 
+// Registration Page Initialization
+function initRegister() {
+    // Step navigation handlers
+    const steps = document.querySelectorAll('.step');
+    const formSteps = document.querySelectorAll('.form-step');
+    const stepLines = document.querySelectorAll('.step-line');
+    
+    // Step 1 to Step 2 button handler
+    const step1NextBtn = document.getElementById('step1Next');
+    if (step1NextBtn) {
+        step1NextBtn.addEventListener('click', handleStep1Next);
+    }
+    
+    // Step 2 navigation buttons
+    const step2PrevBtn = document.getElementById('step2Prev');
+    const step2NextBtn = document.getElementById('step2Next');
+    if (step2PrevBtn) step2PrevBtn.addEventListener('click', handleStep2Prev);
+    if (step2NextBtn) step2NextBtn.addEventListener('click', handleStep2Next);
+    
+    // Step 3 back button
+    const step3PrevBtn = document.getElementById('step3Prev');
+    if (step3PrevBtn) step3PrevBtn.addEventListener('click', handleStep3Prev);
+    
+    // Password strength meter
+    const passwordField = document.getElementById('password');
+    if (passwordField) {
+        passwordField.addEventListener('input', updatePasswordStrength);
+    }
+    
+    // Toggle password visibility
+    const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+    togglePasswordButtons.forEach(button => {
+        button.addEventListener('click', togglePasswordVisibility);
+    });
+    
+    // Form submission
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegistrationSubmit);
+    }
+    
+    // Helper functions inside initRegister scope
+    function handleStep1Next() {
+        // First step validation logic
+        if (validateStep1()) {
+            formSteps[0].classList.remove('active');
+            formSteps[1].classList.add('active');
+            steps[0].classList.add('completed');
+            steps[1].classList.add('active');
+            stepLines[0].classList.add('active');
+            document.getElementById('password').focus();
+        }
+    }
+    
+    function handleStep2Prev() {
+        formSteps[1].classList.remove('active');
+        formSteps[0].classList.add('active');
+        steps[1].classList.remove('active');
+        stepLines[0].classList.remove('active');
+    }
+    
+    function handleStep2Next() {
+        if (validateStep2()) {
+            formSteps[1].classList.remove('active');
+            formSteps[2].classList.add('active');
+            steps[1].classList.add('completed');
+            steps[2].classList.add('active');
+            stepLines[1].classList.add('active');
+        }
+    }
+    
+    function handleStep3Prev() {
+        formSteps[2].classList.remove('active');
+        formSteps[1].classList.add('active');
+        steps[2].classList.remove('active');
+        stepLines[1].classList.remove('active');
+    }
+    
+    function updatePasswordStrength() {
+        const strengthMeter = document.getElementById('strengthMeter');
+        const strengthText = document.getElementById('strengthText');
+        const password = passwordField.value;
+        const score = calculatePasswordStrength(password);
+        
+        strengthMeter.style.width = score + '%';
+        
+        if (score < 40) {
+            strengthMeter.style.backgroundColor = '#dc3545';
+            strengthText.textContent = 'Weak';
+            strengthText.style.color = '#dc3545';
+        } else if (score < 70) {
+            strengthMeter.style.backgroundColor = '#ffc107';
+            strengthText.textContent = 'Medium';
+            strengthText.style.color = '#ffc107';
+        } else {
+            strengthMeter.style.backgroundColor = '#28a745';
+            strengthText.textContent = 'Strong';
+            strengthText.style.color = '#28a745';
+        }
+    }
+    
+    function togglePasswordVisibility() {
+        const passwordInput = this.previousElementSibling;
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+    
+    async function handleRegistrationSubmit(e) {
+        e.preventDefault();
+        
+        // Your validation code...
+        
+            // In your handleRegistrationSubmit function:
+            const formData = new FormData();
+            formData.append('email', document.getElementById('email').value.trim());
+            formData.append('password', document.getElementById('password').value);
+            formData.append('first_name', document.getElementById('firstName').value.trim());
+            formData.append('last_name', document.getElementById('lastName').value.trim());
+            formData.append('date_of_birth', document.getElementById('dateOfBirth').value);
+
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            if (phoneNumber) {
+                formData.append('phone_number', phoneNumber);
+            }
+
+            // Use upload method instead of update
+            const response = await walletAPI.upload(`addOrUpdateUser.php?id=add`, formData);
+        
+        try {
+            console.log('Sending user data:', userData);
+            const response = await walletAPI.user.update('add', userData);
+            console.log('Registration response:', response);
+            
+            if (response.success) {
+                resultElement.textContent = 'Account created successfully! Redirecting to dashboard...';
+                resultElement.classList.add('success');
+                
+                // Store user ID in session storage
+                localStorage.setItem('user_id', response.user_id);
+                
+                // Redirect to dashboard after a short delay
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+            } else {
+                resultElement.textContent = response.message || 'Registration failed. Please try again.';
+                resultElement.classList.add('error');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            resultElement.textContent = error.message || 'An error occurred. Please try again.';
+            resultElement.classList.add('error');
+        }
+    }
+    
+    function validateStep1() {
+        const firstName = document.getElementById('firstName');
+        const lastName = document.getElementById('lastName');
+        const email = document.getElementById('email');
+        const dateOfBirth = document.getElementById('dateOfBirth');
+        
+        if (!firstName.value.trim()) {
+            showInputError(firstName, 'First name is required');
+            return false;
+        }
+        
+        if (!lastName.value.trim()) {
+            showInputError(lastName, 'Last name is required');
+            return false;
+        }
+        
+        if (!email.value.trim()) {
+            showInputError(email, 'Email is required');
+            return false;
+        }
+        
+        if (!isValidEmail(email.value.trim())) {
+            showInputError(email, 'Please enter a valid email address');
+            return false;
+        }
+        
+        if (!dateOfBirth.value) {
+            showInputError(dateOfBirth, 'Date of birth is required');
+            return false;
+        }
+        
+        // Age validation
+        const birthDate = new Date(dateOfBirth.value);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        if (age < 18) {
+            showInputError(dateOfBirth, 'You must be at least 18 years old to register');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function validateStep2() {
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (!password.value) {
+            showInputError(password, 'Password is required');
+            return false;
+        }
+        
+        if (password.value.length < 8) {
+            showInputError(password, 'Password must be at least 8 characters long');
+            return false;
+        }
+        
+        if (!confirmPassword.value) {
+            showInputError(confirmPassword, 'Please confirm your password');
+            return false;
+        }
+        
+        if (password.value !== confirmPassword.value) {
+            showInputError(confirmPassword, 'Passwords do not match');
+            return false;
+        }
+        
+        return true;
+    }
+} 
+
+// Form validation helper functions
+function showInputError(inputElement, message) {
+    const parent = inputElement.parentElement;
+    const existingError = parent.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    inputElement.classList.add('error-input');
+    
+    const errorMessage = document.createElement('p');
+    errorMessage.className = 'error-message';
+    errorMessage.textContent = message;
+    parent.appendChild(errorMessage);
+    
+    inputElement.focus();
+    
+    inputElement.addEventListener('input', function() {
+        this.classList.remove('error-input');
+        const error = parent.querySelector('.error-message');
+        if (error) {
+            error.remove();
+        }
+    }, { once: true });
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function calculatePasswordStrength(password) {
+    if (!password) return 0;
+    
+    let score = 0;
+    
+    // Length
+    score += Math.min(password.length * 4, 25);
+    
+    // Uppercase letters
+    if (/[A-Z]/.test(password)) score += 10;
+    
+    // Lowercase letters
+    if (/[a-z]/.test(password)) score += 10;
+    
+    // Numbers
+    if (/[0-9]/.test(password)) score += 10;
+    
+    // Special characters
+    if (/[^A-Za-z0-9]/.test(password)) score += 15;
+    
+    // Variety of characters
+    const uniqueChars = [...new Set(password.split(''))].length;
+    score += Math.min(uniqueChars * 2, 15);
+    
+    // Mix of numbers, letters, and special characters
+    if (/[A-Za-z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) {
+        score += 15;
+    }
+    
+    return Math.min(score, 100);
+}
 
 // Dashboard Initialization
 function initDashboard(userId) {
@@ -812,7 +1125,59 @@ function fetchTransactions(type = 'ALL') {
             `;
         });
 }
-
+// Add this function to your script.js
+window.verifyTransaction = function(expectedCode) {
+    const inputCode = document.getElementById('verificationInput').value.trim();
+    
+    if (!inputCode) {
+        showToast('Please enter the verification code', 'error');
+        return;
+    }
+    
+    if (inputCode !== expectedCode) {
+        showToast('Invalid verification code', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const verifyBtn = document.querySelector('.verification-form .primary-btn');
+    const originalBtnText = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+    verifyBtn.disabled = true;
+    
+    // Call the verifyTransaction endpoint
+    axios.post('http://localhost/Wallet/Wallet - Server/user/v1/verifyTransaction.php', 
+        { verification_code: inputCode },
+        { withCredentials: true }
+    )
+    .then(response => {
+        const data = response.data;
+        if (data.success) {
+            showToast('Transaction verified successfully!', 'success');
+            
+            // Close the QR code modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            // Refresh transactions list if on dashboard
+            if (typeof fetchTransactions === 'function') {
+                fetchTransactions();
+            }
+        } else {
+            showToast(data.message || 'Verification failed', 'error');
+            verifyBtn.innerHTML = originalBtnText;
+            verifyBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error verifying transaction:', error);
+        showToast('Error during verification', 'error');
+        verifyBtn.innerHTML = originalBtnText;
+        verifyBtn.disabled = false;
+    });
+};
 // Add Wallet Function
 function addWallet() {
     const modal = document.createElement('div');
@@ -1529,70 +1894,569 @@ function viewWalletDetails(walletId) {
     window.location.href = `wallet-details.html?id=${walletId}`;
 }
 
-// Update Profile Function
-function updateProfile(e) {
+// Profile page initialization
+function initProfile() {
+    const userId = sessionStorage.getItem('user_id');
+    if (!userId) {
+        // Redirect to login if no user is logged in
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Load user data
+    loadUserProfile(userId);
+    
+    // Setup form event listeners
+    setupProfileForms();
+}
+
+// Load user profile data
+async function loadUserProfile(userId) {
+    try {
+        const response = await walletAPI.user.getDetails(userId);
+        
+        if (response.success) {
+            const userData = response.data;
+            
+            // Update display elements
+            document.querySelectorAll('#userEmail').forEach(el => {
+                el.textContent = userData.email;
+            });
+            
+            document.getElementById('profileName').textContent = 
+                `${userData.first_name} ${userData.last_name}`;
+            
+            // Fill form fields
+            document.getElementById('firstName').value = userData.first_name || '';
+            document.getElementById('lastName').value = userData.last_name || '';
+            document.getElementById('email').value = userData.email || '';
+            document.getElementById('phoneNumber').value = userData.phone_number || '';
+            document.getElementById('dateOfBirth').value = userData.date_of_birth || '';
+        } else {
+            showToast('Failed to load profile data', 'error');
+            console.error('Error loading profile:', response.message);
+        }
+    } catch (error) {
+        showToast('Error loading profile data', 'error');
+        console.error('Error fetching user details:', error);
+    }
+}
+
+// Setup profile forms with event listeners
+function setupProfileForms() {
+    // Profile update form
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        console.log("Adding event listener to profile form");
+        profileForm.addEventListener('submit', function(e) {
+            console.log("Profile form submitted - preventing default");
+            e.preventDefault();
+            handleProfileUpdate(e);
+    });
+    }
+    
+    // Password change form
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordChange);
+    }
+    
+    // Identity verification form
+    const verificationForm = document.getElementById('verificationForm');
+    if (verificationForm) {
+        verificationForm.addEventListener('submit', handleIdentityVerification);
+    }
+}
+
+// Handle profile update submission
+async function handleProfileUpdate(e) {
     e.preventDefault();
     
-    const firstName = document.getElementById('firstName').value.trim();
-    const lastName = document.getElementById('lastName').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const phoneNumber = document.getElementById('phoneNumber').value.trim();
-    const dateOfBirth = document.getElementById('dateOfBirth').value;
-    
-    if (!firstName || !lastName || !email || !dateOfBirth) {
-        showToast('Please fill in all required fields', 'error');
+    // Validate form
+    if (!validateProfileForm()) {
         return;
     }
     
     const userId = sessionStorage.getItem('user_id');
+    const resultElement = document.getElementById('profileResult');
+    
+    resultElement.textContent = 'Saving changes...';
+    resultElement.className = 'form-result';
+    resultElement.style.display = 'block';
+    
     const userData = {
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        phone_number: phoneNumber,
-        date_of_birth: dateOfBirth
+        first_name: document.getElementById('firstName').value.trim(),
+        last_name: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone_number: document.getElementById('phoneNumber').value.trim(),
+        date_of_birth: document.getElementById('dateOfBirth').value
     };
     
-    // Show loading state
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-    submitBtn.disabled = true;
-    
-    walletAPI.user.update(userId, userData)
-        .then(response => {
-            if (response.success) {
-                showToast('Profile updated successfully', 'success');
-                // Update display name
-                const profileNameElement = document.getElementById('profileName');
-                if (profileNameElement) {
-                    profileNameElement.textContent = `${firstName} ${lastName}`;
-                }
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        submitBtn.disabled = true;
+        
+        const response = await walletAPI.user.update(userId, userData);
+        
+        if (response.success) {
+            resultElement.textContent = 'Profile updated successfully!';
+            resultElement.classList.add('success');
+            
+            // Update profile display
+            document.getElementById('profileName').textContent = 
+                `${userData.first_name} ${userData.last_name}`;
                 
-                // Update email displays
-                const userEmailElements = document.querySelectorAll('#userEmail');
-                userEmailElements.forEach(el => {
-                    el.textContent = email;
-                });
-            } else {
-                showToast(response.message || 'Failed to update profile', 'error');
-            }
+            document.querySelectorAll('#userEmail').forEach(el => {
+                el.textContent = userData.email;
+            });
             
-            // Reset button
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
-        })
-        .catch(error => {
-            console.error('Error updating profile:', error);
-            showToast(error.message || 'An error occurred', 'error');
-            
-            // Reset button
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
-        });
+            showToast('Profile updated successfully', 'success');
+        } else {
+            resultElement.textContent = response.message || 'Failed to update profile';
+            resultElement.classList.add('error');
+            showToast('Failed to update profile', 'error');
+        }
+        
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    } catch (error) {
+        resultElement.textContent = error.message || 'An error occurred. Please try again.';
+        resultElement.classList.add('error');
+        
+        console.error('Profile update error:', error);
+        showToast('Error updating profile', 'error');
+        
+        // Reset button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        submitBtn.disabled = false;
+    }
 }
 
-// Initiate Transaction
+// Handle password change submission
+async function handlePasswordChange(e) {
+    e.preventDefault();
+    
+    // Validate password form
+    if (!validatePasswordForm()) {
+        return;
+    }
+    
+    const resultElement = document.getElementById('passwordResult');
+    resultElement.textContent = 'Updating password...';
+    resultElement.className = 'form-result';
+    resultElement.style.display = 'block';
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        submitBtn.disabled = true;
+        
+        const response = await walletAPI.auth.updatePassword(currentPassword, newPassword);
+        
+        if (response.success) {
+            resultElement.textContent = 'Password updated successfully!';
+            resultElement.classList.add('success');
+            
+            // Clear form
+            this.reset();
+            
+            showToast('Password updated successfully', 'success');
+        } else {
+            resultElement.textContent = response.message || 'Failed to update password';
+            resultElement.classList.add('error');
+            showToast('Failed to update password', 'error');
+        }
+        
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    } catch (error) {
+        resultElement.textContent = error.message || 'An error occurred. Please try again.';
+        resultElement.classList.add('error');
+        
+        console.error('Password update error:', error);
+        showToast('Error updating password', 'error');
+        
+        // Reset button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-lock"></i> Change Password';
+        submitBtn.disabled = false;
+    }
+}
+
+// Handle identity verification submission
+async function handleIdentityVerification(e) {
+    e.preventDefault();
+    
+    // Validate verification form
+    const documentType = document.getElementById('documentType').value;
+    const documentFile = document.getElementById('documentFile').files[0];
+    
+    if (!documentType) {
+        showInputError(document.getElementById('documentType'), 'Please select a document type');
+        return;
+    }
+    
+    if (!documentFile) {
+        showInputError(document.getElementById('documentFile'), 'Please upload a document');
+        return;
+    }
+    
+    const resultElement = document.getElementById('verificationResult');
+    resultElement.textContent = 'Uploading document...';
+    resultElement.className = 'form-result';
+    resultElement.style.display = 'block';
+    
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        submitBtn.disabled = true;
+        
+        const response = await walletAPI.user.verifyIdentity(documentType, documentFile);
+        
+        if (response.success) {
+            resultElement.textContent = 'Document uploaded successfully! Our team will review it shortly.';
+            resultElement.classList.add('success');
+            
+            // Update verification status UI
+            const verificationStatus = document.querySelector('.verification-status');
+            if (verificationStatus) {
+                verificationStatus.innerHTML = `
+                    <p class="status-pending"><i class="fas fa-clock"></i> Your document has been submitted and is pending review.</p>
+                `;
+            }
+            
+            // Clear form
+            this.reset();
+            
+            showToast('Document uploaded successfully', 'success');
+        } else {
+            resultElement.textContent = response.message || 'Failed to upload document';
+            resultElement.classList.add('error');
+            showToast('Failed to upload document', 'error');
+        }
+        
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    } catch (error) {
+        resultElement.textContent = error.message || 'An error occurred. Please try again.';
+        resultElement.classList.add('error');
+        
+        console.error('Document upload error:', error);
+        showToast('Error uploading document', 'error');
+        
+        // Reset button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-upload"></i> Submit Verification';
+        submitBtn.disabled = false;
+    }
+}
+// Handle password change submission
+async function handlePasswordChange(e) {
+    e.preventDefault();
+    
+    // Validate password form
+    if (!validatePasswordForm()) {
+        return;
+    }
+    
+    const resultElement = document.getElementById('passwordResult');
+    resultElement.textContent = 'Updating password...';
+    resultElement.className = 'form-result';
+    resultElement.style.display = 'block';
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        submitBtn.disabled = true;
+        
+        const response = await walletAPI.auth.updatePassword(currentPassword, newPassword);
+        
+        if (response.success) {
+            resultElement.textContent = 'Password updated successfully!';
+            resultElement.classList.add('success');
+            
+            // Clear form
+            this.reset();
+            
+            showToast('Password updated successfully', 'success');
+        } else {
+            resultElement.textContent = response.message || 'Failed to update password';
+            resultElement.classList.add('error');
+            showToast('Failed to update password', 'error');
+        }
+        
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    } catch (error) {
+        resultElement.textContent = error.message || 'An error occurred. Please try again.';
+        resultElement.classList.add('error');
+        
+        console.error('Password update error:', error);
+        showToast('Error updating password', 'error');
+        
+        // Reset button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-lock"></i> Change Password';
+        submitBtn.disabled = false;
+    }
+}
+
+// Handle identity verification submission
+async function handleIdentityVerification(e) {
+    e.preventDefault();
+    
+    // Validate verification form
+    const documentType = document.getElementById('documentType').value;
+    const documentFile = document.getElementById('documentFile').files[0];
+    
+    if (!documentType) {
+        showInputError(document.getElementById('documentType'), 'Please select a document type');
+        return;
+    }
+    
+    if (!documentFile) {
+        showInputError(document.getElementById('documentFile'), 'Please upload a document');
+        return;
+    }
+    
+    const resultElement = document.getElementById('verificationResult');
+    resultElement.textContent = 'Uploading document...';
+    resultElement.className = 'form-result';
+    resultElement.style.display = 'block';
+    
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        submitBtn.disabled = true;
+        
+        const response = await walletAPI.user.verifyIdentity(documentType, documentFile);
+        
+        if (response.success) {
+            resultElement.textContent = 'Document uploaded successfully! Our team will review it shortly.';
+            resultElement.classList.add('success');
+            
+            // Update verification status UI
+            const verificationStatus = document.querySelector('.verification-status');
+            if (verificationStatus) {
+                verificationStatus.innerHTML = `
+                    <p class="status-pending"><i class="fas fa-clock"></i> Your document has been submitted and is pending review.</p>
+                `;
+            }
+            
+            // Clear form
+            this.reset();
+            
+            showToast('Document uploaded successfully', 'success');
+        } else {
+            resultElement.textContent = response.message || 'Failed to upload document';
+            resultElement.classList.add('error');
+            showToast('Failed to upload document', 'error');
+        }
+        
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    } catch (error) {
+        resultElement.textContent = error.message || 'An error occurred. Please try again.';
+        resultElement.classList.add('error');
+        
+        console.error('Document upload error:', error);
+        showToast('Error uploading document', 'error');
+        
+        // Reset button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-upload"></i> Submit Verification';
+        submitBtn.disabled = false;
+    }
+}
+// Handle password change submission
+async function handlePasswordChange(e) {
+    e.preventDefault();
+    
+    // Validate password form
+    if (!validatePasswordForm()) {
+        return;
+    }
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        submitBtn.disabled = true;
+        
+        const response = await walletAPI.auth.updatePassword(currentPassword, newPassword);
+        
+        if (response.success) {
+            showToast('Password updated successfully', 'success');
+            
+            // Clear form
+            this.reset();
+        } else {
+            showToast(response.message || 'Failed to update password', 'error');
+        }
+        
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    } catch (error) {
+        showToast('Error updating password', 'error');
+        console.error('Password update error:', error);
+        
+        // Reset button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-lock"></i> Change Password';
+        submitBtn.disabled = false;
+    }
+}
+
+// Handle identity verification submission
+async function handleIdentityVerification(e) {
+    e.preventDefault();
+    
+    // Validate verification form
+    const documentType = document.getElementById('documentType').value;
+    const documentFile = document.getElementById('documentFile').files[0];
+    
+    if (!documentType) {
+        showInputError(document.getElementById('documentType'), 'Please select a document type');
+        return;
+    }
+    
+    if (!documentFile) {
+        showInputError(document.getElementById('documentFile'), 'Please upload a document');
+        return;
+    }
+    
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        submitBtn.disabled = true;
+        
+        const response = await walletAPI.user.verifyIdentity(documentType, documentFile);
+        
+        if (response.success) {
+            showToast('Document uploaded successfully', 'success');
+            
+            // Update verification status UI
+            const verificationStatus = document.querySelector('.verification-status');
+            if (verificationStatus) {
+                verificationStatus.innerHTML = `
+                    <p class="status-pending"><i class="fas fa-clock"></i> Your document has been submitted and is pending review.</p>
+                `;
+            }
+            
+            // Clear form
+            this.reset();
+        } else {
+            showToast(response.message || 'Failed to upload document', 'error');
+        }
+        
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    } catch (error) {
+        showToast('Error uploading document', 'error');
+        console.error('Document upload error:', error);
+        
+        // Reset button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-upload"></i> Submit Verification';
+        submitBtn.disabled = false;
+    }
+}
+
+// Validate profile form
+function validateProfileForm() {
+    const firstName = document.getElementById('firstName');
+    const lastName = document.getElementById('lastName');
+    const email = document.getElementById('email');
+    const dateOfBirth = document.getElementById('dateOfBirth');
+    
+    if (!firstName.value.trim()) {
+        showInputError(firstName, 'First name is required');
+        return false;
+    }
+    
+    if (!lastName.value.trim()) {
+        showInputError(lastName, 'Last name is required');
+        return false;
+    }
+    
+    if (!email.value.trim()) {
+        showInputError(email, 'Email is required');
+        return false;
+    }
+    
+    if (!isValidEmail(email.value.trim())) {
+        showInputError(email, 'Please enter a valid email address');
+        return false;
+    }
+    
+    if (!dateOfBirth.value) {
+        showInputError(dateOfBirth, 'Date of birth is required');
+        return false;
+    }
+    
+    return true;
+}
+
+// Validate password form
+function validatePasswordForm() {
+    const currentPassword = document.getElementById('currentPassword');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    if (!currentPassword.value) {
+        showInputError(currentPassword, 'Current password is required');
+        return false;
+    }
+    
+    if (!newPassword.value) {
+        showInputError(newPassword, 'New password is required');
+        return false;
+    }
+    
+    if (newPassword.value.length < 8) {
+        showInputError(newPassword, 'Password must be at least 8 characters long');
+        return false;
+    }
+    
+    if (!confirmPassword.value) {
+        showInputError(confirmPassword, 'Please confirm your new password');
+        return false;
+    }
+    
+    if (newPassword.value !== confirmPassword.value) {
+        showInputError(confirmPassword, 'Passwords do not match');
+        return false;
+    }
+    
+    return true;
+}
+
+// This updates your initiateTransaction function to include the "To Another User" option
+
 function initiateTransaction(walletId) {
     walletAPI.wallet.getAll()
         .then(response => {
@@ -1628,17 +2492,12 @@ function initiateTransaction(walletId) {
                     <form id="transferForm" class="modal-form">
                         <input type="hidden" id="sourceWalletId" value="${walletId}">
                         
-                        <div class="wallet-info-box">
-                            <h3>From Wallet</h3>
-                            <p>Wallet #${sourceWallet.wallet_id} (${sourceWallet.currency_code})</p>
-                            <p class="wallet-balance">Available Balance: ${formatCurrency(sourceWallet.balance, sourceWallet.currency_code)}</p>
-                        </div>
-                        
                         <div class="input-group">
                             <label for="transferType">Transfer Type:</label>
                             <select id="transferType" class="input-field" required onchange="toggleTransferFields()">
                                 <option value="">Select transfer type</option>
                                 <option value="internal">To Another Wallet</option>
+                                <option value="user">To Another User</option>
                                 <option value="external">To External Account</option>
                             </select>
                         </div>
@@ -1650,6 +2509,18 @@ function initiateTransaction(walletId) {
                                     <option value="">Select destination wallet</option>
                                     ${walletOptions}
                                 </select>
+                            </div>
+                        </div>
+                        
+                        <div id="userTransferFields" style="display: none;">
+                            <div class="input-group">
+                                <label for="targetUserId">Recipient User ID:</label>
+                                <input type="number" id="targetUserId" class="input-field" placeholder="Enter recipient's user ID">
+                            </div>
+                            <div class="input-group">
+                                <label for="targetUserWalletId">Recipient Wallet ID (Optional):</label>
+                                <input type="number" id="targetUserWalletId" class="input-field" placeholder="Enter recipient's wallet ID (optional)">
+                                <small>If left blank, the recipient's default wallet will be used</small>
                             </div>
                         </div>
                         
@@ -1680,12 +2551,8 @@ function initiateTransaction(walletId) {
                         </div>
                         
                         <div class="modal-actions">
-                            <button type="submit" class="btn primary-btn">
-                                <i class="fas fa-paper-plane"></i> Send Transfer
-                            </button>
-                            <button type="button" class="btn secondary-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
+                            <button type="submit" class="btn primary-btn">Send Transfer</button>
+                            <button type="button" class="btn secondary-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -1699,21 +2566,25 @@ function initiateTransaction(walletId) {
                 }
             });
             
-            // Toggle transfer fields
+            // Toggle transfer fields based on transfer type
             window.toggleTransferFields = function() {
                 const transferType = document.getElementById('transferType').value;
                 const internalFields = document.getElementById('internalTransferFields');
+                const userFields = document.getElementById('userTransferFields');
                 const externalFields = document.getElementById('externalTransferFields');
                 
+                // Hide all fields first
+                internalFields.style.display = 'none';
+                userFields.style.display = 'none';
+                externalFields.style.display = 'none';
+                
+                // Show the appropriate fields based on selection
                 if (transferType === 'internal') {
                     internalFields.style.display = 'block';
-                    externalFields.style.display = 'none';
+                } else if (transferType === 'user') {
+                    userFields.style.display = 'block';
                 } else if (transferType === 'external') {
-                    internalFields.style.display = 'none';
                     externalFields.style.display = 'block';
-                } else {
-                    internalFields.style.display = 'none';
-                    externalFields.style.display = 'none';
                 }
             };
             
@@ -1743,6 +2614,8 @@ function initiateTransaction(walletId) {
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                     submitBtn.disabled = true;
                     
+                    let response;
+                    
                     if (transferType === 'internal') {
                         const targetWalletId = parseInt(document.getElementById('targetWalletId').value);
                         
@@ -1753,50 +2626,39 @@ function initiateTransaction(walletId) {
                             return;
                         }
                         
-                        // Show confirmation
-                        if (!confirm(`Transfer ${formatCurrency(amount, sourceWallet.currency_code)} to Wallet #${targetWalletId}?`)) {
-                            submitBtn.innerHTML = originalBtnText;
-                            submitBtn.disabled = false;
-                            return;
-                        }
-                        
                         // Process internal transfer
-                        const response = await walletAPI.wallet.transferInternal(
+                        response = await walletAPI.wallet.transferInternal(
                             sourceWalletId,
                             targetWalletId,
                             amount,
                             description
                         );
                         
-                        if (response.success) {
-                            showToast('Transfer completed successfully', 'success');
-                            
-                            // Show transfer details if available
-                            if (response.data) {
-                                const details = response.data;
-                                console.log('Transfer details:', details);
-                                
-                                // Show more detailed success message
-                                let successMsg = `Transfer successful!\n`;
-                                
-                                if (details.currency_sent !== details.currency_received) {
-                                    successMsg += `${formatCurrency(details.amount_sent, details.currency_sent)} sent\n`;
-                                    successMsg += `${formatCurrency(details.amount_received, details.currency_received)} received\n`;
-                                    successMsg += `Exchange rate: ${details.exchange_rate}\n`;
-                                    successMsg += `Fee: ${formatCurrency(details.exchange_fee, details.currency_sent)}\n`;
-                                }
-                                
-                                alert(successMsg);
-                            }
-                            
-                            fetchWallets();
-                            fetchTransactions();
-                            modal.remove();
-                        } else {
-                            showToast(response.message || 'Transfer failed', 'error');
+                    } else if (transferType === 'user') {
+                        const targetUserId = document.getElementById('targetUserId').value.trim();
+                        let targetUserWalletId = document.getElementById('targetUserWalletId').value.trim();
+                        
+                        if (!targetUserId) {
+                            showToast('Please enter recipient user ID', 'error');
                             submitBtn.innerHTML = originalBtnText;
                             submitBtn.disabled = false;
+                            return;
                         }
+
+                        // If target wallet ID is not provided, use the user ID as the default wallet ID
+                        // This is a simplification - in a real app you'd need to fetch the user's default wallet
+                        if (!targetUserWalletId) {
+                            targetUserWalletId = targetUserId;
+                        }
+                        
+                        // Use the internal transfer function, treating the target wallet ID as another wallet
+                        response = await walletAPI.wallet.transferInternal(
+                            sourceWalletId,
+                            targetUserWalletId,
+                            amount,
+                            description + " (To User: " + targetUserId + ")"
+                        );
+                        
                     } else if (transferType === 'external') {
                         const recipientName = document.getElementById('recipientName').value.trim();
                         const accountNumber = document.getElementById('accountNumber').value.trim();
@@ -1809,15 +2671,8 @@ function initiateTransaction(walletId) {
                             return;
                         }
                         
-                        // Show confirmation
-                        if (!confirm(`Transfer ${formatCurrency(amount, sourceWallet.currency_code)} to ${recipientName}?`)) {
-                            submitBtn.innerHTML = originalBtnText;
-                            submitBtn.disabled = false;
-                            return;
-                        }
-                        
                         // Process external transfer
-                        const response = await walletAPI.wallet.transferExternal(
+                        response = await walletAPI.wallet.transferExternal(
                             sourceWalletId,
                             recipientName,
                             accountNumber,
@@ -1825,24 +2680,26 @@ function initiateTransaction(walletId) {
                             amount,
                             description
                         );
-                        
-                        if (response.success) {
-                            showToast('External transfer initiated successfully', 'success');
-                            fetchWallets();
-                            fetchTransactions();
-                            modal.remove();
-                        } else {
-                            showToast(response.message || 'Transfer failed', 'error');
-                            submitBtn.innerHTML = originalBtnText;
-                            submitBtn.disabled = false;
-                        }
                     }
+                    
+                    if (response && response.success) {
+                        showToast(response.message || 'Transfer completed successfully', 'success');
+                        
+                        fetchWallets(); // Refresh wallets
+                        fetchTransactions(); // Refresh transactions
+                        modal.remove();
+                    } else {
+                        showToast(response?.message || 'Transfer failed', 'error');
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                    }
+                    
                 } catch (error) {
                     console.error('Error during transfer:', error);
                     showToast(error.message || 'An error occurred. Please try again.', 'error');
                     
                     const submitBtn = form.querySelector('button[type="submit"]');
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Transfer';
+                    submitBtn.innerHTML = 'Send Transfer';
                     submitBtn.disabled = false;
                 }
             });
@@ -1852,195 +2709,61 @@ function initiateTransaction(walletId) {
             showToast('Failed to load wallets', 'error');
         });
 }
-    
-    // Toggle transfer type fields
-    const transferTypeSelect = document.getElementById('transferType');
-    transferTypeSelect.addEventListener('change', () => {
-        const internalFields = document.getElementById('internalTransferFields');
-        const externalFields = document.getElementById('externalTransferFields');
-        
-        if (transferTypeSelect.value === 'internal') {
-            internalFields.style.display = 'block';
-            externalFields.style.display = 'none';
-        } else if (transferTypeSelect.value === 'external') {
-            internalFields.style.display = 'none';
-            externalFields.style.display = 'block';
-        } else {
-            internalFields.style.display = 'none';
-            externalFields.style.display = 'none';
-        }
-    });
-    
-    // Form submission
-    const transferForm = document.getElementById('transferForm');
-    transferForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const sourceWalletId = parseInt(document.getElementById('sourceWalletId').value);
-        const transferType = document.getElementById('transferType').value;
-        const amount = parseFloat(document.getElementById('transferAmount').value);
-        const description = document.getElementById('transferDescription').value.trim();
-        
-        if (!transferType || !amount || isNaN(amount) || amount <= 0) {
-            showToast('Please provide a valid transfer type and amount', 'error');
-            return;
-        }
-        
-        // Show loading state
-        const submitBtn = transferForm.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        submitBtn.disabled = true;
-        
-        if (transferType === 'internal') {
-            const targetWalletId = parseInt(document.getElementById('targetWalletId').value);
-            if (!targetWalletId) {
-                showToast('Please select a destination wallet', 'error');
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-                return;
-            }
-            
-            try {
-                const response = await walletAPI.wallet.transferInternal(
-                    sourceWalletId,
-                    targetWalletId,
-                    amount,
-                    description
-                );
-                
-                if (response.success) {
-                    showToast('Transfer completed successfully', 'success');
-                    fetchWallets();
-                    fetchTransactions();
-                    modal.remove();
-                } else {
-                    showToast(response.message || 'Transfer failed', 'error');
-                    submitBtn.innerHTML = originalBtnText;
-                    submitBtn.disabled = false;
-                }
-            } catch (error) {
-                console.error('Error during transfer:', error);
-                showToast(error.message || 'An error occurred. Please try again.', 'error');
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-            }
-            
-        } else if (transferType === 'external') {
-            const recipientName = document.getElementById('recipientName').value.trim();
-            const accountNumber = document.getElementById('accountNumber').value.trim();
-            const bankName = document.getElementById('bankName').value.trim();
-            
-            if (!recipientName || !accountNumber || !bankName) {
-                showToast('Please fill in all recipient details', 'error');
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-                return;
-            }
-            
-            try {
-                const response = await walletAPI.wallet.transferExternal(
-                    sourceWalletId,
-                    recipientName,
-                    accountNumber,
-                    bankName,
-                    amount,
-                    description
-                );
-                
-                if (response.success) {
-                    showToast('External transfer initiated successfully', 'success');
-                    fetchWallets();
-                    fetchTransactions();
-                    modal.remove();
-                } else {
-                    showToast(response.message || 'Transfer failed', 'error');
-                    submitBtn.innerHTML = originalBtnText;
-                    submitBtn.disabled = false;
-                }
-            } catch (error) {
-                console.error('Error during external transfer:', error);
-                showToast(error.message || 'An error occurred. Please try again.', 'error');
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-            }
-        }
-    });
 
-// Initiate external wallet transfer
-function initiateExternalTransfer(sourceWalletId, recipientName, accountNumber, bankName, amount, description = '') {
-    walletAPI.wallet.transferExternal(sourceWalletId, recipientName, accountNumber, bankName, amount, description)
-        .then(response => {
-            if (response.success) {
-                showToast('External transfer initiated successfully', 'success');
-                fetchWallets();
-                fetchTransactions();
-                // Close modal if open
-                const modal = document.querySelector('.modal');
-                if (modal) modal.remove();
-            } else {
-                showToast(response.message || 'Transfer failed', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error during external transfer:', error);
-            showToast(error.message || 'An error occurred. Please try again.', 'error');
-        });
-}
 
-// Update password function
-function updatePassword(e) {
-    e.preventDefault();
+// Function to verify a transaction with a verification code
+window.verifyTransaction = function(expectedCode) {
+    const inputCode = document.getElementById('verificationInput').value.trim();
     
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (!currentPassword || !newPassword || !confirmPassword) {
-        showToast('Please fill in all password fields', 'error');
+    if (!inputCode) {
+        showToast('Please enter the verification code', 'error');
         return;
     }
     
-    if (newPassword !== confirmPassword) {
-        showToast('New passwords do not match', 'error');
-        return;
-    }
-    
-    if (newPassword.length < 8) {
-        showToast('Password must be at least 8 characters long', 'error');
+    if (inputCode !== expectedCode) {
+        showToast('Invalid verification code', 'error');
         return;
     }
     
     // Show loading state
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
-    submitBtn.disabled = true;
+    const verifyBtn = document.querySelector('.verification-form .primary-btn');
+    const originalBtnText = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+    verifyBtn.disabled = true;
     
-    walletAPI.auth.updatePassword(currentPassword, newPassword)
-        .then(response => {
-            if (response.success) {
-                showToast('Password updated successfully', 'success');
-                // Clear the form
-                document.getElementById('passwordForm').reset();
-            } else {
-                showToast(response.message || 'Failed to update password', 'error');
+    // Call the verifyTransaction endpoint
+    axios.post('http://localhost/Wallet/Wallet - Server/user/v1/verifyTransaction.php', 
+        { verification_code: inputCode },
+        { withCredentials: true }
+    )
+    .then(response => {
+        const data = response.data;
+        if (data.success) {
+            showToast('Transaction verified successfully!', 'success');
+            
+            // Close the QR code modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.remove();
             }
             
-            // Reset button
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
-        })
-        .catch(error => {
-            console.error('Error updating password:', error);
-            showToast(error.message || 'An error occurred', 'error');
-            
-            // Reset button
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
-        });
-}
-
+            // Refresh transactions list if on dashboard
+            if (typeof fetchTransactions === 'function') {
+                fetchTransactions();
+            }
+        } else {
+            showToast(data.message || 'Verification failed', 'error');
+            verifyBtn.innerHTML = originalBtnText;
+            verifyBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error verifying transaction:', error);
+        showToast('Error during verification', 'error');
+        verifyBtn.innerHTML = originalBtnText;
+        verifyBtn.disabled = false;
+    });
+};
 // Toast Notification Function
 function showToast(message, type = 'info') {
     // Remove any existing toasts
@@ -2116,13 +2839,16 @@ function showResult(message, type, element) {
 
 // Helper Functions
 function formatCurrency(amount, currencyCode) {
-    const formatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currencyCode || 'USD',
-        minimumFractionDigits: 2
-    });
-    
-    return formatter.format(amount);
+    try {
+        if (!currencyCode || currencyCode === '0' || !/^[A-Z]{3}$/.test(currencyCode)) {
+            console.warn('Invalid currency code:', currencyCode, 'defaulting to USD');
+            currencyCode = 'USD'; // Default to USD
+        }
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
+    } catch (e) {
+        console.error('Currency formatting error:', e);
+        return amount.toFixed(2); // Fallback to plain number
+    }
 }
 
 function formatStatus(status) {
