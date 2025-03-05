@@ -1,10 +1,9 @@
 <?php
 // API to upload verification documents for identity verification
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/VerificationDocument.php';
+$db = require_once '../../Connection/db_connect.php';
+require_once '../../Models/VerificationDocument.php';
 
-header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

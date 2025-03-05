@@ -33,50 +33,44 @@ class User {
 
     public function update($user_id, $data) {
         $set = [];
-        $params = [];
         $types = '';
         $values = [];
 
-        if (isset($data['email'])) {
-            $set[] = "email = ?";
-            $types .= 's';
-            $values[] = $data['email'];
-        }
-        if (isset($data['password_hash'])) {
-            $set[] = "password_hash = ?";
-            $types .= 's';
-            $values[] = $data['password_hash'];
-        }
-        if (isset($data['first_name'])) {
-            $set[] = "first_name = ?";
-            $types .= 's';
-            $values[] = $data['first_name'];
-        }
-        if (isset($data['last_name'])) {
-            $set[] = "last_name = ?";
-            $types .= 's';
-            $values[] = $data['last_name'];
-        }
-        if (isset($data['phone_number'])) {
-            $set[] = "phone_number = ?";
-            $types .= 's';
-            $values[] = $data['phone_number'];
-        }
-        if (isset($data['date_of_birth'])) {
-            $set[] = "date_of_birth = ?";
-            $types .= 's';
-            $values[] = $data['date_of_birth'];
+        $fields = ['email', 'password_hash', 'first_name', 'last_name', 'phone_number', 'date_of_birth'];
+        foreach ($fields as $field) {
+            if (isset($data[$field])) {
+                $set[] = "$field = ?";
+                $types .= 's';
+                $values[] = $data[$field];
+            }
         }
 
-        if (empty($set)) return false;
+        if (empty($set)) {
+            return false;
+        }
 
-        $query = "UPDATE users SET " . implode(', ', $set) . " WHERE user_id = ?";
         $types .= 'i';
         $values[] = $user_id;
 
+        $query = "UPDATE users SET " . implode(', ', $set) . " WHERE user_id = ?";
         $stmt = $this->db->prepare($query);
-        $stmt->bind_param($types, ...$values);
+
+        if ($stmt === false) {
+            error_log("Prepare failed: " . $this->db->error, 3, '../../logs/error.log');
+            return false;
+        }
+
+        $bindParams = [$stmt, $types];
+        foreach ($values as $value) {
+            $bindParams[] = $value;
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bindParams);
+
         $success = $stmt->execute();
+        if ($success === false) {
+            error_log("Execute failed: " . $stmt->error, 3, '../../logs/error.log');
+        }
+
         $stmt->close();
         return $success;
     }

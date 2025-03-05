@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Digital Wallet - Secure, Fast, and Easy Digital Payment Solution">
+    <title>Digital Wallet - Modern Payment Solution</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/landing-page.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <img src="assets/wallet_5365683.png" alt="Digital Wallet Logo" class="logo">
+            <h1>Digital Wallet</h1>
+        </div>
+        <ul class="nav-links" id="navLinks"></ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Secure, Fast, and Easy Digital Payments</h1>
+            <p class="hero-subtitle">Manage your money with ease, send and receive payments instantly, and enjoy secure transactions from anywhere.</p>
+            <div class="hero-buttons">
+                <a href="register.html" class="btn primary-btn">Get Started</a>
+                <a href="#features" class="btn secondary-btn">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Secure Transactions</h3>
+                <p class="feature-description">All transactions are encrypted and secured with state-of-the-art technology to protect your financial data.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="feature-title">Instant Transfers</h3>
+                <p class="feature-description">Send and receive money instantly with our lightning-fast payment processing system.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h3 class="feature-title">Multi-Currency Support</h3>
+                <p class="feature-description">Manage multiple currencies in one place and make international transfers with competitive exchange rates.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Financial Analytics</h3>
+                <p class="feature-description">Track your spending habits, view detailed reports, and gain insights into your financial activities.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="feature-title">Mobile-Friendly</h3>
+                <p class="feature-description">Access your wallet on the go with our responsive mobile interface designed for all devices.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 class="feature-title">24/7 Support</h3>
+                <p class="feature-description">Our dedicated support team is available around the clock to assist you with any questions or concerns.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="about-content">
+            <h2 class="section-title">About Digital Wallet</h2>
+            <p>Digital Wallet is a modern payment solution designed to make financial transactions simple, secure, and accessible to everyone. Our platform combines cutting-edge technology with user-friendly features to deliver a seamless payment experience.</p>
+            <p>Founded in 2023, we've grown rapidly and now serve thousands of users worldwide. Our mission is to revolutionize the way people handle money in the digital age by providing a reliable, efficient, and innovative payment system.</p>
+            <p>With a focus on security and user experience, Digital Wallet is constantly evolving to meet the changing needs of our users and the dynamic financial landscape.</p>
+        </div>
+        <div class="about-image-container">
+            <img src="assets/About.webp" alt="Digital Wallet Team" class="about-image">
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <h2 class="section-title">What Our Users Say</h2>
+        <div class="testimonials-container">
+            <div class="testimonial active">
+                <p class="testimonial-content">"Digital Wallet has completely changed how I manage my finances. The instant transfers and multi-currency support make it perfect for my international business transactions. I couldn't be happier with the service!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="author-info">
+                        <h4>Sarah Johnson</h4>
+                        <p>Business Owner</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <p class="testimonial-content">"I've tried many digital payment platforms, but none compare to the security and ease of use that Digital Wallet offers. The analytics feature has helped me better understand my spending habits and save money."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="author-info">
+                        <h4>Michael Chen</h4>
+                        <p>Software Developer</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <p class="testimonial-content">"The customer support at Digital Wallet is exceptional! When I had an issue with a transaction, the team resolved it within minutes. I feel confident knowing my money is in good hands."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="author-info">
+                        <h4>Emily Rodriguez</h4>
+                        <p>Graduate Student</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-controls">
+                <button id="prevTestimonial" class="control-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="nextTestimonial" class="control-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to Get Started?</h2>
+            <p class="cta-description">Join thousands of satisfied users and experience the future of digital payments. Sign up today and get access to all our features!</p>
+            <a href="register.html" class="cta-btn">Create Account</a>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <h2 class="section-title">Contact Us</h2>
+        <form class="contact-form">
+            <div class="input-group">
+                <label for="contactName">Full Name</label>
+                <input type="text" id="contactName" class="input-field" required placeholder="Your name">
+            </div>
+            <div class="input-group">
+                <label for="contactEmail">Email Address</label>
+                <input type="email" id="contactEmail" class="input-field" required placeholder="Your email">
+            </div>
+            <div class="input-group">
+                <label for="contactSubject">Subject</label>
+                <input type="text" id="contactSubject" class="input-field" required placeholder="Message subject">
+            </div>
+            <div class="input-group">
+                <label for="contactMessage">Message</label>
+                <textarea id="contactMessage" class="input-field" rows="5" required placeholder="Your message"></textarea>
+            </div>
+            <button type="submit" class="btn primary-btn">Send Message</button>
+        </form>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <img src="assets/wallet_5365683.png" alt="Digital Wallet Logo" class="logo">
+                <p>Secure, fast, and easy digital payment solution for everyone.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Sign Up</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Compliance</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Finance Street, New York, NY</li>
+                    <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                    <li><i class="fas fa-envelope"></i> support@digitalwallet.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Digital Wallet. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

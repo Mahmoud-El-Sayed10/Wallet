@@ -1,10 +1,8 @@
 <?php
 // API to add a new wallet for a user
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/Wallet.php';
-
-header('Content-Type: application/json');
+$db=require_once '../../Connection/db_connect.php';
+require_once '../../Models/Wallet.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -22,7 +20,18 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-if (!isset($_POST['currency_code'])) {
+// Get input data - check for JSON format
+$contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
+if (strpos($contentType, 'application/json') !== false) {
+    // Handle JSON input
+    $data = json_decode(file_get_contents('php://input'), true);
+} else {
+    // Handle form data input
+    $data = $_POST;
+}
+
+// Check for required fields
+if (!isset($data['currency_code'])) {
     $response['message'] = 'Missing currency_code';
     echo json_encode($response);
     exit;
@@ -30,7 +39,7 @@ if (!isset($_POST['currency_code'])) {
 
 try {
     $wallet = new Wallet($db);
-    $currency_code = $_POST['currency_code'];
+    $currency_code = $data['currency_code'];
 
     if ($wallet->create($user_id, $currency_code)) {
         $wallet_id = $db->insert_id;

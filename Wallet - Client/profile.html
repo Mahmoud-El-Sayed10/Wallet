@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Digital Wallet User Profile">
+    <title>Digital Wallet - Profile</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <img src="assets/wallet_5365683.png" alt="Digital Wallet Logo" class="logo">
+            <h1>Digital Wallet</h1>
+        </div>
+        <ul class="nav-links" id="navLinks"></ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-info">
+                    <p class="user-name">Welcome</p>
+                    <p class="user-email" id="userEmail">Loading...</p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+                    <li><a href="dashboard.html#wallets"><i class="fas fa-wallet"></i> Wallets</a></li>
+                    <li><a href="dashboard.html#cards"><i class="fas fa-credit-card"></i> Cards</a></li>
+                    <li><a href="dashboard.html#bank-accounts"><i class="fas fa-university"></i> Bank Accounts</a></li>
+                    <li><a href="dashboard.html#transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+                    <li class="active"><a href="profile.html"><i class="fas fa-user-cog"></i> Profile</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="dashboard-section">
+                <div class="dashboard-card">
+                    <h2 class="section-title">My Profile</h2>
+                    <div class="profile-container">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="profile-info">
+                                <h3 id="profileName">Loading...</h3>
+                                <p id="userEmail">Loading...</p>
+                            </div>
+                        </div>
+
+                        <form id="profileForm" class="profile-form">
+                            <div class="form-row">
+                                <div class="input-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" id="firstName" name="first_name" class="input-field" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" id="lastName" name="last_name" class="input-field" required>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" class="input-field" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="phoneNumber">Phone Number</label>
+                                <input type="tel" id="phoneNumber" name="phone_number" class="input-field">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="dateOfBirth">Date of Birth</label>
+                                <input type="date" id="dateOfBirth" name="date_of_birth" class="input-field" required>
+                            </div>
+                            
+                            <div id="profileResult" class="form-result"></div>
+                            <div class="profile-actions">
+                                <button type="submit" class="btn primary-btn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h2 class="section-title">Security Settings</h2>
+                    
+                    <form id="passwordForm" class="profile-form">
+                        <div class="input-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" class="input-field" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" class="input-field" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="input-field" required>
+                        </div>
+                        
+                        <div id="passwordResult" class="form-result"></div>
+                        <div class="profile-actions">
+                            <button type="submit" class="btn primary-btn">
+                                <i class="fas fa-lock"></i> Change Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="dashboard-card">
+                    <h2 class="section-title">Identity Verification</h2>
+                    
+                    <div class="verification-status">
+                        <p><i class="fas fa-exclamation-circle"></i> Your identity needs to be verified to unlock all features.</p>
+                    </div>
+                    
+                    <form id="verificationForm" class="profile-form">
+                        <div class="input-group">
+                            <label for="documentType">Document Type</label>
+                            <select id="documentType" class="input-field" required>
+                                <option value="">Select document type</option>
+                                <option value="PASSPORT">Passport</option>
+                                <option value="ID_CARD">ID Card</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="documentFile">Upload Document</label>
+                            <input type="file" id="documentFile" class="input-field" required>
+                            <small>Please upload a clear image of your document (JPG, PNG, or PDF, max 5MB)</small>
+                        </div>
+                        
+                        <div id="verificationResult" class="form-result"></div>
+                        <div class="profile-actions">
+                            <button type="submit" class="btn primary-btn">
+                                <i class="fas fa-upload"></i> Submit Verification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Digital Wallet. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

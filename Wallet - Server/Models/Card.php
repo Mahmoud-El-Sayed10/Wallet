@@ -7,15 +7,22 @@ class Card{
         $this->conn = $db;
     }
 
-    public function create($wallet_id, $card_nickname, $cardholder_name, $card_number_last_four, $card_type, $expiry_month, $expiry_year, $currency_code) {
-        $stmt = $this->conn->prepare("INSERT INTO cards (wallet_id, card_nickname, cardholder_name, card_number_last_four, card_type, expiry_month, expiry_year, currency_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("issssiis", $wallet_id, $card_nickname, $cardholder_name, $card_number_last_four, $card_type, $expiry_month, $expiry_year, $currency_code);
+    public function create($wallet_id, $card_nickname, $cardholder_name, $card_number_last_four, $card_type, $expiry_month, $expiry_year, $currency_code, $is_primary = false) {
+        $stmt = $this->conn->prepare("INSERT INTO cards (wallet_id, card_nickname, cardholder_name, card_number_last_four, card_type, expiry_month, expiry_year, currency_code, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("issssiisi", $wallet_id, $card_nickname, $cardholder_name, $card_number_last_four, $card_type, $expiry_month, $expiry_year, $currency_code, $is_primary);
         return $stmt->execute();
     }
 
     public function read($wallet_id) {
         $stmt = $this->conn->prepare("SELECT * FROM cards WHERE wallet_id = ?");
         $stmt->bind_param("i", $wallet_id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
+
+    public function readById($card_id) { 
+        $stmt = $this->conn->prepare("SELECT * FROM cards WHERE card_id = ?");
+        $stmt->bind_param("i", $card_id);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
@@ -46,6 +53,7 @@ class Card{
         $stmt->bind_param("i", $card_id);
         return $stmt->execute();
     }
+
 
 }
 ?>

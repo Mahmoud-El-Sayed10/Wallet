@@ -83,14 +83,31 @@ class Transaction {
         return $result;
     }
 
-    private function generateTransactionId() {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
+    public function readRecent($user_id, $limit = 5) {
+        $stmt = $this->db->prepare("SELECT t.* FROM transactions t 
+            JOIN wallets w ON t.wallet_id = w.wallet_id 
+            JOIN timestamps ts ON ts.entity_type = 'TRANSACTION' AND ts.entity_id = t.transaction_id 
+            WHERE w.user_id = ? ORDER BY ts.created_at DESC LIMIT ?");
+        if ($stmt === false) {
+            error_log("Prepare failed: " . $this->db->error, 3, '../../logs/error.log');
+            return [];
+        }
+        $stmt->bind_param("ii", $user_id, $limit);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $result;
     }
+
+    // Add to Transaction.php model
+    public function generateTransactionId() {
+    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+}
 }
 ?>

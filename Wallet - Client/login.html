@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Digital Wallet Login">
+    <title>Digital Wallet - Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="index.html" class="logo">
+            <i class="fas fa-wallet"></i>
+        </a>
+        <div class="nav-links">
+            <a href="index.html#features" class="nav-link">
+                <i class="fas fa-star"></i> Features
+            </a>
+            <a href="index.html#about" class="nav-link">
+                <i class="fas fa-info-circle"></i> About
+            </a>
+            <a href="index.html#contact" class="nav-link">
+                <i class="fas fa-envelope"></i> Contact
+            </a>
+            <a href="login.html" class="nav-link">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a href="register.html" class="signup-btn">
+                <i class="fas fa-user-plus"></i> Sign Up
+            </a>
+        </div>
+    </header>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <h1 class="login-title">Login</h1>
+        
+        <form id="loginForm" class="login-form">
+            <div class="input-group">
+                <label for="userEmail">Email</label>
+                <input type="email" id="userEmail" class="input-field" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="userPassword">Password</label>
+                <input type="password" id="userPassword" class="input-field" required>
+            </div>
+            
+            <div class="show-password-container">
+                <input type="checkbox" id="showPassword">
+                <label for="showPassword">Show Password</label>
+            </div>
+            
+            <button type="submit" class="login-btn">Login</button>
+            
+            <div id="loginResult"></div>
+            
+            <div class="form-footer">
+                <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+        </form>
+        
+        <div class="register-link">
+            Don't have an account? <a href="register.html">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show/hide password functionality
+            const showPasswordCheckbox = document.getElementById('showPassword');
+            const passwordField = document.getElementById('userPassword');
+
+            if (showPasswordCheckbox && passwordField) {
+                showPasswordCheckbox.addEventListener('change', function() {
+                    passwordField.type = this.checked ? 'text' : 'password';
+                });
+            }
+
+            // Login form submission
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const email = document.getElementById('userEmail').value.trim();
+                    const password = document.getElementById('userPassword').value.trim();
+                    const resultElement = document.getElementById('loginResult');
+                    
+                    if (!email || !password) {
+                        showResult('Please enter both email and password', 'error', resultElement);
+                        return;
+                    }
+                    
+                    try {
+                        const res = await axios.post('http://localhost/Wallet/Wallet - Server/user/v1/login.php', {
+                            email,
+                            password
+                        }, {
+                            headers: { 'Content-Type': 'application/json' },
+                            withCredentials: true
+                        });
+                        
+                        if (res.data.success) {
+                            sessionStorage.setItem('user_id', res.data.user_id);
+                            showResult('Login successful! Redirecting...', 'success', resultElement);
+                            setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                        } else {
+                            showResult(res.data.message || 'Login failed. Please check your credentials.', 'error', resultElement);
+                        }
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        showResult(error.response?.data?.error || 'An error occurred. Please try again.', 'error', resultElement);
+                    }
+                });
+            }
+
+            // Utility function for showing results
+            function showResult(message, type, element) {
+                if (element) {
+                    element.textContent = message;
+                    element.className = 'result-message';
+                    
+                    if (type === 'success') {
+                        element.classList.add('success');
+                    } else if (type === 'error') {
+                        element.classList.add('error');
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -3,9 +3,10 @@
 // API to manage users for SUPER_ADMIN
 
 require_once '../../connection/db_connect.php';
-require_once '../../model/User.php';
+require_once '../../Models/User.php';
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
 session_start();
 $response = ['success' => false, 'message' => 'Unauthorized'];

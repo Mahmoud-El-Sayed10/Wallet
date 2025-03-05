@@ -1,10 +1,9 @@
 <?php
 // API to retrieve details of a specific wallet for a user
 
-require_once '../../connection/db_connect.php';
-require_once '../../model/Wallet.php';
+$db = require_once '../../connection/db_connect.php';
+require_once '../../Models/Wallet.php';
 
-header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);

@@ -3,7 +3,7 @@
 // API to manage wallets
 
 require_once '../../connection/db_connect.php';
-require_once '../../model/Wallet.php';
+require_once '../../Models/Wallet.php';
 
 header('Content-Type: application/json');
 
