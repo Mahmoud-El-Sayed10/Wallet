@@ -7,3 +7,6 @@ IP Address: 13.38.23.228
 
 To access GitHub Pages:
 https://Mahmoud-El-Sayed10.github.io/Mahmoud-El-Sayed10.github.io
+
+For deployment instructions on EC2:
+deployment
