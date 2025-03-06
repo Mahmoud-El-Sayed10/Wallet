@@ -1,0 +1,152 @@
+# Wallet Application Deployment Guide - AWS EC2
+
+This guide outlines the steps needed to deploy the Wallet PHP application on an AWS EC2 instance.
+
+## Prerequisites
+
+Before starting, ensure you have:
+- An AWS account with EC2 access
+- SSH client (PuTTY for Windows or Terminal for Mac/Linux)
+- Your project's Git repository link
+- Database SQL dump file
+- EC2 instance credentials (sent via Slack)
+
+## Step 1: Connect to Your EC2 Instance
+
+Connect to your server using SSH:
+
+```
+ssh -i /path/to/your-key.pem ubuntu@your-ec2-ip-address
+```
+
+Or use PuTTY with your credentials.
+
+## Step 2: Install Required Software
+
+Update package lists and install required software:
+
+```bash
+# Update package lists
+sudo apt-get update
+
+# Install Apache web server
+sudo apt-get install apache2
+
+# Install MySQL, PHP, and required extensions
+sudo apt-get install mysql-server php php-mysql libapache2-mod-php php-curl php-cli git
+```
+
+## Step 3: Configure Apache
+
+Enable the rewrite module for URL rewriting:
+
+```bash
+sudo a2enmod rewrite
+sudo service apache2 restart
+```
+
+## Step 4: Clone the Project Repository
+
+Navigate to the web directory and clone your project:
+
+```bash
+cd /var/www/html/
+sudo git clone https://github.com/Mahmoud-El-Sayed10/Wallet.git
+```
+
+## Step 5: Configure Apache Virtual Host
+
+### Update Apache Configuration
+
+Edit the main Apache configuration file:
+
+```bash
+sudo nano /etc/apache2/apache2.conf
+```
+
+Find the `/var/www/` directory section and update it to allow .htaccess overrides:
+
+```
+<Directory /var/www/>
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
+```
+
+Save and exit (Ctrl+O, then Ctrl+X).
+
+### Edit the Default Site Configuration
+
+Edit the default Apache site configuration:
+
+```bash
+cd /etc/apache2/sites-enabled
+sudo nano 000-default.conf
+```
+
+Update the document root to point to your project folder:
+
+```
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html/Wallet/
+    
+    # Add other existing configurations...
+</VirtualHost>
+```
+
+Save and exit (Ctrl+O, then Ctrl+X).
+
+## Step 6: Restart Apache to Apply Changes
+
+```bash
+sudo service apache2 restart
+```
+
+## Step 7: Set Up the Database
+
+First, log in to MySQL:
+
+```bash
+mysql -u root -p
+```
+
+Create a new database:
+
+```sql
+CREATE DATABASE digital_wallet;
+EXIT;
+```
+
+Import your database structure and data:
+
+```bash
+mysql -u root -p digital_wallet < /path/to/dump.sql
+```
+
+## Step 8: Configure Database Connection
+
+Update your application's database configuration file to match the newly created database:
+
+```bash
+sudo nano /var/www/html/Wallet/Connection/config.php
+```
+
+Update the following details:
+```php
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'digital_wallet');
+define('DB_USER', 'root');
+define('DB_PASS', 'your_password');
+```
+
+
+## Step 9: Verify Deployment
+
+Open a web browser and navigate to your EC2 instance's public IP address:
+```
+http://your-ec2-ip-address
+```
+
+This documentation is maintained by Mahmoud-El-Sayed10. Last updated: March 6, 2025.
